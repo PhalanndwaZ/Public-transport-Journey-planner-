@@ -18,9 +18,8 @@ function Home() {
             params: {
             api_key: apiKey,
             text: query,
-            "focus.point.lat": -33.9249,
-            "focus.point.lon": 18.4241
-            }
+            "boundary.country": "ZA"
+          }
         }
     );
     setFunc(res.data.features);
