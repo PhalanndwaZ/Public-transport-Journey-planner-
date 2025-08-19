@@ -1,0 +1,39 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #e6f7f5; /* pastel green */
+  color: #333;
+}
+
+input, button {
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  margin: 8px 0;
+  width: 100%;
+}
+
+input {
+  background: #d6ecfa; /* pastel blue */
+}
+
+button {
+  background: #a3d9c9; /* pastel green */
+  cursor: pointer;
+}
+
+button:hover {
+  background: #8bcfb8;
+}
+
+/* spinner rotation */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spinner {
+  display: block;
+  margin: 8px auto 16px;
+  animation: spin 1.15s linear infinite;
+  transform-origin: 50% 50%;
+}
