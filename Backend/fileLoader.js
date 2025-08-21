@@ -6,12 +6,12 @@ class DataLoader {
         this.stops = {};
         this.routes = {};
         this.trips = {};
+        this.stopToRoutes = {}; // NEW: stopID -> [routeIDs]
     }
 
     LoadRoutes(filePath) {
         const content = fileSystem.readFileSync(filePath, "utf-8");
-        //parse into array with header row
-        const rows = parse.parse(content, {
+        return parse.parse(content, {
             columns: true,
             bom: true,
             skip_empty_lines: true,
@@ -19,84 +19,89 @@ class DataLoader {
             relax_quotes: true,
             trim: false
         });
-        return rows;
     }
 
-    // Build data for the data structure
     BuildData(rows) {
-        const stops = {}; // stopname -> stopID
-        const routes = {}; // routeID -> [stopIDs]
-        const trips = {}; // tripID -> {route, times: [stopID, time]}
-        let stopCounter = 0; // transition counter
+        const stops = {};
+        const routes = {};
+        const trips = {};
+        const stopToRoutes = {};
+        let stopCounter = 0;
 
         rows.forEach((row) => {
-            const tripID = row.trip_id;
+            // CREATE UNIQUE TRIP IDs: Include day type to avoid overwriting
+            const baseTripID = row.trip_id;
+            const dayType = row.day_type.replace(/\s+/g, '_').toUpperCase();
+            const tripID = `${baseTripID}_${dayType}`;
+            
             const routeID = row.route;
-            // ensure route initialization
             if (!routes[routeID]) routes[routeID] = [];
 
-            // build trip
-            const trip = {
-                tripID,
-                route: routeID,
-                times: [],
+            const trip = { 
+                tripID, 
+                baseTripID, // Keep original for reference
+                dayType: row.day_type,
+                route: routeID, 
+                times: [] 
             };
-
-            // loop to remove fields that are not data
+                      
+            // Collect all stop times first
+            const stopTimes = [];
             Object.keys(row).forEach(col => {
-                if (
-                    col === "trip_id" ||
-                    col === "day_type" ||
-                    col === "direction" ||
-                    col === "route"
-                ) {
-                    return; // skip meta info
-                }
+                if (["trip_id", "day_type", "direction", "route"].includes(col)) return;
+
                 const raw = row[col];
-                // value from CSV
-                const time = raw ? raw.trim() : "";  // safe trim
+                const time = raw ? raw.trim() : "";
+                if (!time) return;
 
-                if (time) {
-                    // assign stopID if new stop
-                    if (!(col in stops)) {
-                        stops[col] = stopCounter++;
-                    }
-                    const stopID = stops[col];
-                    // add to trip
-                    trip.times.push({ stopID, time });
+                if (!(col in stops)) {
+                    stops[col] = stopCounter++;
+                }
+                const stopID = stops[col];
+                stopTimes.push({ stopID, time, stopName: col });
 
-                    // add trip to route (once in order of appearance)
-                    if (!routes[routeID].includes(stopID)) {
-                        routes[routeID].push(stopID);
-                    }
+                // add stop to route if not already
+                if (!routes[routeID].includes(stopID)) {
+                    routes[routeID].push(stopID);
+                }
+
+                //  link stop → route
+                if (!stopToRoutes[stopID]) stopToRoutes[stopID] = [];
+                if (!stopToRoutes[stopID].includes(routeID)) {
+                    stopToRoutes[stopID].push(routeID);
                 }
             });
+
+            // FIX: Reverse stop order for inbound trips
+            if (row.direction && row.direction.toLowerCase() === 'inbound') {
+                stopTimes.reverse();
+            }
+
+            trip.times = stopTimes.map(({ stopID, time }) => ({ stopID, time }));
             trips[tripID] = trip;
         });
 
-        // Store in instance variables
         this.stops = stops;
         this.routes = routes;
         this.trips = trips;
+        this.stopToRoutes = stopToRoutes;
 
-        return { stops, routes, trips };
+        return { stops, routes, trips, stopToRoutes };
     }
 
-    // Load data from file and build structures
     loadFromFile(filePath) {
         console.log("Loading transit data from:", filePath);
         const rows = this.LoadRoutes(filePath);
         const data = this.BuildData(rows);
-        
+
         console.log("Data loaded successfully!");
         console.log("Total stops:", Object.keys(data.stops).length);
         console.log("Total routes:", Object.keys(data.routes).length);
         console.log("Total trips:", Object.keys(data.trips).length);
-        
+
         return data;
     }
 
-    // Helper methods
     getAvailableStops() {
         return Object.keys(this.stops).sort();
     }
