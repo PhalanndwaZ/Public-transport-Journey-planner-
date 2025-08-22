@@ -7,6 +7,8 @@ const apiKey = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjM5ZWFmYjYw
 function Home() {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
   const [fromSuggestions, setFromSuggestions] = useState([]);
   const [toSuggestions, setToSuggestions] = useState([]);
   const navigate = useNavigate();
@@ -14,24 +16,30 @@ function Home() {
   const fetchSuggestions = async (query, setFunc) => {
     if (query.length < 3) return;
     const res = await axios.get(
-        `https://api.openrouteservice.org/geocode/search`, {
-            params: {
-            api_key: apiKey,
-            text: query,
-            "boundary.country": "ZA"
-          }
+      `https://api.openrouteservice.org/geocode/search`, {
+        params: {
+          api_key: apiKey,
+          text: query,
+          "boundary.country": "ZA" // ✅ restrict to South Africa
         }
+      }
     );
     setFunc(res.data.features);
   };
 
   const handleSubmit = () => {
-    navigate("/search", { state: { from, to } });
+    if (!from || !to || !date || !time) {
+      alert("Please fill in all fields");
+      return;
+    }
+    navigate("/search", { state: { from, to, date, time } });
   };
 
   return (
-    <div style={{ padding: "20px", maxWidth: "400px", margin: "auto" }}>
+    <div style={{ padding: "20px", maxWidth: "420px", margin: "auto" }}>
       <h2>Journey Planner</h2>
+
+      {/* FROM input */}
       <input
         value={from}
         onChange={(e) => {
@@ -48,6 +56,7 @@ function Home() {
         ))}
       </ul>
 
+      {/* TO input */}
       <input
         value={to}
         onChange={(e) => {
@@ -64,8 +73,27 @@ function Home() {
         ))}
       </ul>
 
-      <button onClick={handleSubmit}>Search</button>
+      {/* DATE input */}
+      <label style={{ display: "block", marginTop: "12px" }}>Date</label>
+      <input
+        type="date"
+        value={date}
+        onChange={(e) => setDate(e.target.value)}
+      />
+
+      {/* TIME input */}
+      <label style={{ display: "block", marginTop: "12px" }}>Time</label>
+      <input
+        type="time"
+        value={time}
+        onChange={(e) => setTime(e.target.value)}
+      />
+
+      <button onClick={handleSubmit} style={{ marginTop: "16px" }}>
+        Search
+      </button>
     </div>
   );
 }
+
 export default Home;
