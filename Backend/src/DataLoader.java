@@ -1,4 +1,4 @@
-package src;
+package backend;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -86,15 +86,15 @@ public class DataLoader {
             trips.put(tripID, trip);
         }
     }
-
+    // get all stops back 
     public Set<String> getAvailableStops() {
         return new TreeSet<>(stops.keySet());
     }
-
+    // get stop name 
     public Integer findStopByName(String stopName) {
         return stops.get(stopName);
     }
-
+    // convert id to string and returns it 
     public String getStopNameById(int stopId) {
         for (Map.Entry<String, Integer> entry : stops.entrySet()) {
             if (entry.getValue() == stopId) return entry.getKey();

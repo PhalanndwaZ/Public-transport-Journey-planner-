@@ -1,4 +1,4 @@
-package src;
+package backend;
 
 public class StopTime {
     int stopID;

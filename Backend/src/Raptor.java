@@ -1,4 +1,5 @@
-package src;
+package backend;
+
 import java.util.*;
 
 public class Raptor {
@@ -128,37 +129,47 @@ public class Raptor {
      * Reconstruct path from predecessor info
      */
     public static List<PathStep> reconstructPath(
-            Map<Integer, Predecessor> predecessor,
-            int source,
-            int target,
-            DataLoader loader,
-            Map<String, Trip> trips
-    ) {
-        List<PathStep> path = new ArrayList<>();
-        int current = target;
+        Map<Integer, Predecessor> predecessor,
+        int source,
+        int target,
+        DataLoader loader,
+        Map<String, Trip> trips
+) {
+    List<PathStep> path = new ArrayList<>();
+    int current = target;
 
-        while (current != source && predecessor.containsKey(current)) {
-            Predecessor step = predecessor.get(current);
-            Trip trip = trips.get(step.tripID);
+    while (current != source && predecessor.containsKey(current)) {
+        Predecessor step = predecessor.get(current);
+        Trip trip = trips.get(step.tripID);
 
-            int fromIdx = -1, toIdx = -1;
-            for (int i = 0; i < trip.times.size(); i++) {
-                if (trip.times.get(i).stopID == step.from) fromIdx = i;
-                if (trip.times.get(i).stopID == current) toIdx = i;
-            }
-
-            for (int i = fromIdx; i <= toIdx; i++) {
-                StopTime st = trip.times.get(i);
-                path.add(new PathStep(step.tripID, st.stopID,
-                        loader.getStopNameById(st.stopID), st.time));
-            }
-
-            current = step.from;
+        // Find stop indices in this trip
+        int fromIdx = -1, toIdx = -1;
+        for (int i = 0; i < trip.times.size(); i++) {
+            if (trip.times.get(i).stopID == step.from) fromIdx = i;
+            if (trip.times.get(i).stopID == current) toIdx = i;
         }
 
-        Collections.reverse(path);
-        return path;
+        // Only add the forward segment actually used
+        List<PathStep> segment = new ArrayList<>();
+        for (int i = fromIdx; i <= toIdx; i++) {
+            StopTime st = trip.times.get(i);
+            segment.add(new PathStep(
+                    step.tripID,
+                    st.stopID,
+                    loader.getStopNameById(st.stopID),
+                    st.time
+            ));
+        }
+
+        // prepend so path stays in correct order
+        path.addAll(0, segment);
+
+        current = step.from;
     }
+
+    return path;
+}
+
 }
 
 // Helper classes
