@@ -22,3 +22,9 @@ To delete the compiled classes in bin
 javac -d bin src/*.java
 Remove-Item bin\* -Recurse -Force
 
+
+
+final call to run the entire system 
+Transit system will load data in dataloader and run queries as request to the frontend and will finish everything 
+
+

@@ -1,14 +1,19 @@
 package backend;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Trip {
-    String tripID;  // unique id trip 
-    String baseTripID;  //identifier linking to base trip item 
-    String dayType;     //what type of the day this trip runs 
-    String route;       // which route (e.g., bus/train line) this trip belongs to
-    List<StopTime> times;   // the sequence of stops and times
+    // this is the base class for each mode which will have these as a standard 
+    protected String tripID;
+    protected String baseTripID;
+    protected String dayType;
+    protected String route;
+    protected List<StopTime> times;
+    protected TransportMode mode;
+    
 
+    // constructor with the base requirements in each class 
     public Trip(String tripID, String baseTripID, String dayType, String route) {
         this.tripID = tripID;
         this.baseTripID = baseTripID;
@@ -16,7 +21,22 @@ public class Trip {
         this.route = route;
         this.times = new ArrayList<>();
     }
-    public String getTripID(){
+
+    // helper classes 
+    public String getTripID() {
         return tripID;
+    }
+
+    public String getRoute() {
+        return route;
+    }
+
+    public List<StopTime> getTimes() {
+        return times;
+    }
+
+    // Polymorphic method: each subclass identifies itself
+    public String getMode() {
+        return null;
     }
 }

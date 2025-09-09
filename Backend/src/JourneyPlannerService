@@ -1,0 +1,57 @@
+package backend;
+
+import java.io.IOException;
+import java.util.List;
+
+public class JourneyPlannerService {
+
+    private final DataLoader loader;
+
+    public JourneyPlannerService(String datasetPath) throws IOException {
+        //initialize the data loader and iterates over the data set adding it and then 
+        loader = new DataLoader();
+        System.out.println("Loading dataset... this may take a while.");
+        loader.buildData(loader.loadCSV(datasetPath));
+        System.out.println("Dataset loaded successfully. " +
+                loader.stops.size() + " stops, " +
+                loader.trips.size() + " trips.");
+    }
+
+    /**
+     * Runs a RAPTOR query.
+     *
+     * @param fromStop   source stop name
+     * @param toStop     destination stop name
+     * @param time       departure time (HH:MM)
+     * @return List of path steps, or null if no route exists
+     */
+    public List<PathStep> queryJourney(String fromStop, String toStop, String time) {
+        Integer sourceStop = loader.findStopByName(fromStop);
+        Integer targetStop = loader.findStopByName(toStop);
+
+        if (sourceStop == null || targetStop == null) {
+            throw new IllegalArgumentException("Invalid stop name(s): " + fromStop + ", " + toStop);
+        }
+
+        Result result = Raptor.runRaptor(
+                sourceStop,
+                targetStop,
+                time,
+                loader.stops,
+                loader.trips,
+                loader.stopToRoutes
+        );
+
+        if (result.earliestArrival[targetStop] == Integer.MAX_VALUE) {
+            return null; // No path found
+        }
+
+        return Raptor.reconstructPath(
+                result.predecessor,
+                sourceStop,
+                targetStop,
+                loader,
+                loader.trips
+        );
+    }
+}

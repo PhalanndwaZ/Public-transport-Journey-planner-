@@ -152,7 +152,7 @@ public class TestRaptor {
         DataLoader loader = new DataLoader();
         String filePath = "C:\\Users\\Phalanndwa Zwivhuya\\Documents\\School stuff\\computer science\\3rd year\\2025\\CSC3003S\\Data\\CapeTownTransitData\\train-schedules-2014\\S1.csv";
         List<String[]> rows = loader.loadCSV(filePath);
-        loader.buildData(rows);
+        loader.buildData(rows,"TRAIN");
 
         // Build stopToRoutes (already built in DataLoader, but let's copy it)
         Map<Integer, List<String>> stopToRoutes = loader.stopToRoutes;
