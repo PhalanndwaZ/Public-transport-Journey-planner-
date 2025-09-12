@@ -153,11 +153,20 @@ public class Raptor {
         List<PathStep> segment = new ArrayList<>();
         for (int i = fromIdx; i <= toIdx; i++) {
             StopTime st = trip.times.get(i);
+
+            // Get coordinates from DataLoader
+            Stop stop = loader.stopDetails.get(st.stopID);
+            String stopName = (stop != null) ? stop.getName() : loader.getStopNameById(st.stopID);
+            Double lat = (stop != null) ? stop.getLat() : null;
+            Double lon = (stop != null) ? stop.getLon() : null;
+
             segment.add(new PathStep(
                     step.tripID,
                     st.stopID,
-                    loader.getStopNameById(st.stopID),
-                    st.time
+                    stopName,
+                    st.time,
+                    lat,
+                    lon
             ));
         }
 
@@ -169,6 +178,7 @@ public class Raptor {
 
     return path;
 }
+
 
 }
 
@@ -188,21 +198,27 @@ class Predecessor {
 }
 
 class PathStep {
+    // make the path returned with coordinates 
+    
     String tripID;
     int stopID;
     String stopName;
     String time;
+    double lat;
+    double lon;
 
-    public PathStep(String tripID, int stopID, String stopName, String time) {
+    public PathStep(String tripID, int stopID, String stopName, String time,double lat,double lon) {
         this.tripID = tripID;
         this.stopID = stopID;
         this.stopName = stopName;
         this.time = time;
+        this.lat = lat;
+        this.lon = lon;
     }
 
     @Override
     public String toString() {
-        return stopName + " at " + time + " (Trip: " + tripID + ")";
+        return stopName + " at " + time + " (Trip: " + tripID + "), Coordinates: "+lat+","+lon+")";
     }
 }
 

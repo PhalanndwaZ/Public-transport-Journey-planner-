@@ -28,3 +28,21 @@ final call to run the entire system
 Transit system will load data in dataloader and run queries as request to the frontend and will finish everything 
 
 
+
+THE FINAL OUTCOME 
+
+call TransitSystem.query("Cape Town", "Maitland", "07:30")
+- this runs raptor and reconstrucits the path 
+- it returns a List<PathStep>
+
+Each Pathstep contains:
+- tripid you are on
+- Stopname
+- stopTime
+- The coordinates(lat,long)
+
+what you need to draw the route on map 
+
+maybe wrap everytthing in springboot and sent to frontend??
+
+

@@ -10,6 +10,7 @@ public class DataLoader {
     public Map<String, List<Integer>> routes = new HashMap<>(); // routeID -> stopIDs
     public Map<String, Trip> trips = new HashMap<>(); // tripID -> Trip
     public Map<Integer, List<String>> stopToRoutes = new HashMap<>(); // stopID -> routeIDs
+    public Map<Integer, StopLocation> stopDetails = new HashMap<>(); // stopID -> Stop (with name + coords)
     private int stopCounter = 0;
 
     // Simple CSV loader
@@ -25,6 +26,31 @@ public class DataLoader {
             }
         }
         return rows;
+    }
+
+    // Load station coordinates from a CSV like: stopName,lat,lon
+    public void loadStations(String stationFile) throws IOException {
+        try (BufferedReader br = new BufferedReader(new FileReader(stationFile))) {
+            String line = br.readLine(); // skip header
+            while ((line = br.readLine()) != null) {
+                String[] row = line.split(",", -1);
+                if (row.length < 3)
+                    continue;
+
+                String stopName = row[0].trim();
+                double lat = Double.parseDouble(row[1]);
+                double lon = Double.parseDouble(row[2]);
+
+                // If this stop is already in the system, reuse ID
+                Integer stopId = stops.get(stopName);
+                if (stopId == null) {
+                    stopId = stopCounter++;
+                    stops.put(stopName, stopId);
+                }
+
+                stopDetails.put(stopId, new StopLocation(stopId, stopName, lat, lon));
+            }
+        }
     }
 
     // Build data from CSV rows
@@ -112,10 +138,8 @@ public class DataLoader {
 
     // convert id to string and returns it
     public String getStopNameById(int stopId) {
-        for (Map.Entry<String, Integer> entry : stops.entrySet()) {
-            if (entry.getValue() == stopId)
-                return entry.getKey();
-        }
-        return null; // not found
+        StopLocation stop = stopDetails.get(stopId);
+        return stop != null ? stop.getName() : null;
     }
+
 }
