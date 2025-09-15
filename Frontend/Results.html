@@ -1,0 +1,39 @@
+<!--The Following page is just a place holder and will tranform once the backend is integrated-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Journey Planner - Results</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Available Routes</h1>
+    <div id="map">[Map Placeholder]</div>
+
+    <div class="route" onclick="toggleDetails(this)">
+      <h3>Route 1: Bus 12 → Train A</h3>
+      <div class="details">
+        <p>Duration: 45 mins</p>
+        <p>Transfers: 1</p>
+      </div>
+    </div>
+
+    <div class="route" onclick="toggleDetails(this)">
+      <h3>Route 2: Bus 21 → Bus 34</h3>
+      <div class="details">
+        <p>Duration: 55 mins</p>
+        <p>Transfers: 2</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function toggleDetails(routeDiv) {
+      document.querySelectorAll(".route").forEach(r => r.classList.remove("active"));
+      routeDiv.classList.add("active");
+    }
+  </script>
+</body>
+</html>

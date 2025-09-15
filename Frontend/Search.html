@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Journey Planner - Searching</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="container center">
+<h2>Searching for routes...</h2>
+    
+<!-- Journey summary will appear here -->
+<div id="journey-summary" class="journey-summary"></div>
+
+<svg class="spinner" viewBox="0 0 50 50">
+<circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
+</svg>
+</div>
+
+<script>
+    // Get query parameters
+    const params = new URLSearchParams(window.location.search);
+    const from = params.get("from");
+    const to = params.get("to");
+    const date = params.get("date");
+    const time = params.get("time");
+
+    // Show journey details
+    document.getElementById("journey-summary").textContent =
+      `From: ${from} → To: ${to} | Date: ${date} at ${time}`;
+
+    // Redirect to results page after 3s - This is simulated and should be edited when the backend is integrated 
+    setTimeout(() => {
+      window.location.href = `Results.html?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&date=${date}&time=${time}`;
+    }, 3000);
+</script>
+</body>
+</html>
+

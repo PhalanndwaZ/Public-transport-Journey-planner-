@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Journey Planner - Home</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+  <!-- Icons -->
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Journey Planner</h1>
+    <form action="search.html" method="GET">
+      
+      <label for="from">From:</label>
+      <div class="input-group">
+        <i class="fas fa-map-marker-alt"></i>
+        <input type="text" id="from" name="from" placeholder="Enter starting location" required>
+        <div id="from-suggestions" class="suggestions"></div>
+      </div>
+
+      <label for="to">To:</label>
+      <div class="input-group">
+        <i class="fas fa-location-arrow"></i>
+        <input type="text" id="to" name="to" placeholder="Enter destination" required>
+        <div id="to-suggestions" class="suggestions"></div>
+      </div>
+
+      <label for="date">Date:</label>
+      <div class="input-group">
+        <i class="fas fa-calendar-alt"></i>
+        <input type="date" id="date" name="date" required>
+      </div>
+
+      <label for="time">Time:</label>
+      <div class="input-group">
+        <i class="fas fa-clock"></i>
+        <input type="time" id="time" name="time" required>
+      </div>
+
+      <button type="submit"><i class="fas fa-search"></i> Search</button>
+    </form>
+  </div>
+
+  <footer>
+    &copy; 2025 Journey PlannerS
+  </footer>
+
+  <script>
+    const apiKey = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjM5ZWFmYjYwMjI4ZjQ5NGM4MDlhZmRkYmNkYTkxZWMzIiwiaCI6Im11cm11cjY0In0="; 
+    const endpoint = "https://api.openrouteservice.org/geocode/autocomplete";
+
+    function setupAutocomplete(inputId, suggestionsId) {
+      const input = document.getElementById(inputId);
+      const suggestionsBox = document.getElementById(suggestionsId);
+
+      input.addEventListener("input", async () => {
+        const query = input.value;
+        if (query.length < 3) {
+          suggestionsBox.innerHTML = "";
+          return;
+        }
+
+        try {
+          const response = await fetch(`${endpoint}?api_key=${apiKey}&text=${encodeURIComponent(query)}&boundary.country=ZA`);
+          const data = await response.json();
+
+          suggestionsBox.innerHTML = "";
+          data.features.forEach(feature => {
+            const suggestion = document.createElement("div");
+            suggestion.textContent = feature.properties.label;
+            suggestion.onclick = () => {
+              input.value = feature.properties.label;
+              suggestionsBox.innerHTML = "";
+            };
+            suggestionsBox.appendChild(suggestion);
+          });
+        } catch (error) {
+          console.error("Error fetching suggestions:", error);
+        }
+      });
+    }
+
+    setupAutocomplete("from", "from-suggestions");
+    setupAutocomplete("to", "to-suggestions");
+  </script>
+</body>
+</html>
