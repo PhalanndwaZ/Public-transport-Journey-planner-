@@ -126,58 +126,93 @@ public class Raptor {
     }
 
     /**
-     * Reconstruct path from predecessor info
-     */
+ * Reconstruct path from predecessor info
+ */
     public static List<PathStep> reconstructPath(
         Map<Integer, Predecessor> predecessor,
         int source,
         int target,
         DataLoader loader,
         Map<String, Trip> trips
-) {
-    List<PathStep> path = new ArrayList<>();
-    int current = target;
+    ) {
+        List<PathStep> path = new ArrayList<>();
+        int current = target;
 
-    while (current != source && predecessor.containsKey(current)) {
-        Predecessor step = predecessor.get(current);
-        Trip trip = trips.get(step.tripID);
+        while (current != source && predecessor.containsKey(current)) {
+            Predecessor step = predecessor.get(current);
+            Trip trip = trips.get(step.tripID);
 
-        // Find stop indices in this trip
-        int fromIdx = -1, toIdx = -1;
-        for (int i = 0; i < trip.times.size(); i++) {
-            if (trip.times.get(i).stopID == step.from) fromIdx = i;
-            if (trip.times.get(i).stopID == current) toIdx = i;
+            // Find stop indices in this trip
+            int fromIdx = -1, toIdx = -1;
+            for (int i = 0; i < trip.times.size(); i++) {
+                if (trip.times.get(i).stopID == step.from) fromIdx = i;
+                if (trip.times.get(i).stopID == current) toIdx = i;
+            }
+
+            if (fromIdx == -1 || toIdx == -1) {
+                current = step.from;
+                continue;
+            }
+
+            // Build segment of path for this trip
+            List<PathStep> segment = new ArrayList<>();
+            for (int i = fromIdx; i <= toIdx; i++) {
+                StopTime st = trip.times.get(i);
+
+                // Get stop details with coordinates from loader
+                StopLocation loc = loader.stopDetails.get(st.stopID);
+                String stopName = "Unknown Stop";
+                double lat = 0.0;
+                double lon = 0.0;
+
+                if (loc != null) {
+                    stopName = loc.getName();
+                    lat = loc.getLat();
+                    lon = loc.getLon();
+                }
+
+                segment.add(new PathStep(
+                        step.tripID,
+                        st.stopID,
+                        stopName,
+                        st.time,
+                        lat,
+                        lon
+                ));
+            }
+
+            // Prepend to keep chronological order
+            path.addAll(0, segment);
+            current = step.from;
         }
 
-        // Only add the forward segment actually used
-        List<PathStep> segment = new ArrayList<>();
-        for (int i = fromIdx; i <= toIdx; i++) {
-            StopTime st = trip.times.get(i);
-
-            // Get coordinates from DataLoader
-            Stop stop = loader.stopDetails.get(st.stopID);
-            String stopName = (stop != null) ? stop.getName() : loader.getStopNameById(st.stopID);
-            Double lat = (stop != null) ? stop.getLat() : null;
-            Double lon = (stop != null) ? stop.getLon() : null;
-
-            segment.add(new PathStep(
-                    step.tripID,
-                    st.stopID,
-                    stopName,
-                    st.time,
-                    lat,
-                    lon
-            ));
+        // Add source stop if it's not already in the path
+        if (path.isEmpty() || path.get(0).stopID != source) {
+            StopLocation sourceLoc = loader.stopDetails.get(source);
+            if (sourceLoc != null) {
+                // Find departure time from first trip
+                String departureTime = "N/A";
+                if (!path.isEmpty()) {
+                    departureTime = path.get(0).time;
+                }
+                
+                path.add(0, new PathStep(
+                    "SOURCE", 
+                    source, 
+                    sourceLoc.getName(), 
+                    departureTime,
+                    sourceLoc.getLat(), 
+                    sourceLoc.getLon()
+                ));
+            }
         }
 
-        // prepend so path stays in correct order
-        path.addAll(0, segment);
-
-        current = step.from;
+        return path;
     }
 
-    return path;
-}
+
+
+
 
 
 }

@@ -1,15 +1,15 @@
-package backend;
+package src;
 
 
 public class BusStop {
-    public String stopId;
-    public String description;
-    public String routeCode;
-    public String routeName;
-    public String type;
-    public int ordinal;
-    public double longitude;
-    public double latitude;
+    public String stopId;      // BUSSTOPNO
+    public String description; // BUSSTOPDES
+    public String routeCode;   // ROUTECODE
+    public String routeName;   // ROUTENAME
+    public String type;        // CLASSIFICA (Station / Stop)
+    public int ordinal;        // ORDINAL
+    public double longitude;   // xcoord
+    public double latitude;    // ycoord
 
     public BusStop(String stopId, String description, String routeCode, String routeName,
                    String type, int ordinal, double longitude, double latitude) {
@@ -28,3 +28,5 @@ public class BusStop {
         return stopId + " - " + description + " (" + latitude + "," + longitude + ")";
     }
 }
+
+

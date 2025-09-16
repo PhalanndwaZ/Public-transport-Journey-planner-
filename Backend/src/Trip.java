@@ -39,4 +39,9 @@ public class Trip {
     public String getMode() {
         return null;
     }
+
+    public void addStop(StopTime stopTime) {
+    this.times.add(stopTime);
+    }
+
 }

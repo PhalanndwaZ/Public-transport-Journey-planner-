@@ -40,7 +40,8 @@ public class TransitSystem {
 
         // Load train data
         for (String file : trainCSVs) {
-            loader.buildData(loader.loadCSV(file), "TRAIN");
+            List<String[]> rows = loader.loadCSV(file);  //  load the CSV into rows
+            loader.buildTrainData(rows); // load the rows 
         }
 
         // Bus data would be loaded here later...
