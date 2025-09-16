@@ -6,17 +6,17 @@ import java.io.IOException;
 import java.util.*;
 
 public class DataLoader {
-    public Map<String, Integer> stops = new HashMap<>();              
-    public Map<String, List<Integer>> routes = new HashMap<>();       
-    public Map<String, Trip> trips = new HashMap<>();                 
-    public Map<Integer, List<String>> stopToRoutes = new HashMap<>(); 
-    public Map<Integer, StopLocation> stopDetails = new HashMap<>();  
-    public Map<String, StopLocation> stopNameToDetails = new HashMap<>(); 
+    public Map<String, Integer> stops = new HashMap<>();
+    public Map<String, List<Integer>> routes = new HashMap<>();
+    public Map<String, Trip> trips = new HashMap<>();
+    public Map<Integer, List<String>> stopToRoutes = new HashMap<>();
+    public Map<Integer, StopLocation> stopDetails = new HashMap<>();
+    public Map<String, StopLocation> stopNameToDetails = new HashMap<>();
 
     // Coordinate lookup maps from the file
-    private Map<String, double[]> stationNameMap = new HashMap<>();    // Station Name -> coords
-    private Map<String, double[]> stationIdMap = new HashMap<>();      // StationID -> coords
-    private Set<String> standaloneStations = new HashSet<>();          // Stations without coords
+    private Map<String, double[]> stationNameMap = new HashMap<>(); // Station Name -> coords
+    private Map<String, double[]> stationIdMap = new HashMap<>(); // StationID -> coords
+    private Set<String> standaloneStations = new HashSet<>(); // Stations without coords
     private int stopCounter = 0;
 
     // ============= Generic CSV Loader =============
@@ -37,13 +37,14 @@ public class DataLoader {
         stationNameMap.clear();
         stationIdMap.clear();
         standaloneStations.clear();
-        
+
         List<String[]> rows = loadCSV(filePath);
-        if (rows.isEmpty()) return;
+        if (rows.isEmpty())
+            return;
 
         for (int r = 1; r < rows.size(); r++) {
             String[] row = rows.get(r);
-            
+
             // Handle rows with coordinates (4+ columns)
             if (row.length >= 4) {
                 String stationName = row[0].trim().toUpperCase();
@@ -55,9 +56,9 @@ public class DataLoader {
                     try {
                         double lat = Double.parseDouble(latStr);
                         double lon = Double.parseDouble(lonStr);
-                        
-                        stationNameMap.put(stationName, new double[]{lat, lon});
-                        stationIdMap.put(stationId, new double[]{lat, lon});
+
+                        stationNameMap.put(stationName, new double[] { lat, lon });
+                        stationIdMap.put(stationId, new double[] { lat, lon });
                     } catch (NumberFormatException e) {
                         // Skip invalid coordinates
                     }
@@ -76,73 +77,73 @@ public class DataLoader {
     // ============= Smart Coordinate Lookup =============
     private double[] findCoordinates(String trainStopName) {
         String normalized = trainStopName.trim().toUpperCase();
-        
+
         // 1. Direct match with station names
         if (stationNameMap.containsKey(normalized)) {
             return stationNameMap.get(normalized);
         }
-        
+
         // 2. Check if it's in standalone stations (names without coords)
         if (standaloneStations.contains(normalized)) {
             // This station exists but has no coordinates in the file
             return null;
         }
-        
+
         // 3. Try fuzzy matching with station names
         for (String stationName : stationNameMap.keySet()) {
             if (isNameMatch(normalized, stationName)) {
                 return stationNameMap.get(stationName);
             }
         }
-        
+
         // 4. Try fuzzy matching with station IDs
         for (String stationId : stationIdMap.keySet()) {
             if (isNameMatch(normalized, stationId)) {
                 return stationIdMap.get(stationId);
             }
         }
-        
+
         return null; // No match found
     }
-    
+
     // ============= Smart Name Matching =============
     private boolean isNameMatch(String trainName, String coordName) {
         // Remove common words and spaces for better matching
         String cleanTrainName = cleanName(trainName);
         String cleanCoordName = cleanName(coordName);
-        
+
         // Exact match after cleaning
         if (cleanTrainName.equals(cleanCoordName)) {
             return true;
         }
-        
+
         // Partial match - one contains the other
         if (cleanTrainName.contains(cleanCoordName) || cleanCoordName.contains(cleanTrainName)) {
             return true;
         }
-        
+
         // Check if they start with the same 3+ characters
         if (cleanTrainName.length() >= 3 && cleanCoordName.length() >= 3) {
             if (cleanTrainName.substring(0, 3).equals(cleanCoordName.substring(0, 3))) {
                 return true;
             }
         }
-        
+
         return false;
     }
-    
+
     private String cleanName(String name) {
         return name.replaceAll("\\s+", "")
-                  .replace("RD", "")
-                  .replace("ROAD", "")
-                  .replace("ST", "")
-                  .replace("STREET", "");
+                .replace("RD", "")
+                .replace("ROAD", "")
+                .replace("ST", "")
+                .replace("STREET", "");
     }
 
     // ============= Unified Stop Creation =============
     private int createStop(String stopName) {
         String normalizedName = stopName.trim().toUpperCase();
-        
+
         if (stops.containsKey(normalizedName)) {
             return stops.get(normalizedName);
         }
@@ -155,22 +156,24 @@ public class DataLoader {
         // Create stop with coordinates
         int stopIdx = stopCounter++;
         StopLocation location = new StopLocation(stopIdx, normalizedName, lat, lon);
-        
+
         stops.put(normalizedName, stopIdx);
         stopDetails.put(stopIdx, location);
         stopNameToDetails.put(normalizedName, location);
-        
+
         return stopIdx;
     }
 
     // ============= Train Loader =============
     public void buildTrainData(List<String[]> rows) {
-        if (rows.isEmpty()) return;
+        if (rows.isEmpty())
+            return;
         String[] headers = rows.get(0);
 
         for (int r = 1; r < rows.size(); r++) {
             String[] row = rows.get(r);
-            if (row.length < 4) continue;
+            if (row.length < 4)
+                continue;
 
             String baseTripID = row[0];
             String dayType = row[1].replaceAll("\\s+", "_").toUpperCase();
@@ -210,13 +213,15 @@ public class DataLoader {
 
     // ============= Bus Loader =============
     public void buildBusData(List<String[]> rows) {
-        if (rows.isEmpty()) return;
+        if (rows.isEmpty())
+            return;
 
         Map<String, BusTrip> busTrips = new HashMap<>();
 
         for (int r = 1; r < rows.size(); r++) {
             String[] row = rows.get(r);
-            if (row.length < 9) continue;
+            if (row.length < 9)
+                continue;
 
             String routeCode = row[1];
             String routeName = row[2];
@@ -272,7 +277,8 @@ public class DataLoader {
     }
 
     public Integer findStopByName(String stopName) {
-        if (stopName == null) return null;
+        if (stopName == null)
+            return null;
         return stops.get(stopName.toUpperCase());
     }
 
