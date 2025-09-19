@@ -1,0 +1,13 @@
+day_type,TOWN CENTRE,BEACON VALLEY,LENTEGEUR,AIRPORT IND 1
+Fridays,06:15,via,via,06:45
+MondaysToFridays,05:45,via,via,06:50
+MondaysToFridays,06:00,via,via,06:50
+MondaysToFridays,06:30,via,via,07:30
+MondaysToFridays,06:40,via,via,07:50
+MondaysToFridays,06:50,via,via,08:00
+MondaysToFridays,07:15,via,via,08:15
+Mondays_to_Thursdays,06:15,via,via,07:00
+PublicHolidays,06:45,via,via,07:30
+PublicHolidays,07:10,via,via,07:50
+Saturdays,06:30,via,via,07:30
+Saturdays,07:20,via,via,08:15

@@ -1,0 +1,13 @@
+day_type,TOWN CENTRE,MANDALAY,ROCKLANDS,BEACON VALLEY,TAFELSIG,RED CROSS HOSP,MOWBRAY,ALEXANDRA HOSP
+MondaysToFridays,05:35,04:40,,,,,,
+MondaysToFridays,05:10,via,04:50,,,,05:50,06:40
+MondaysToFridays,,,05:00,,,,05:50,07:05
+MondaysToFridays,05:50,05:10,,,,,,
+MondaysToFridays,06:10,05:30,,,,,,
+MondaysToFridays,06:20,05:50,,,,,,
+PublicHolidays,05:55,05:20,,,,,06:55,07:05
+PublicHolidays,17:45,17:20,,,,,18:55,19:05
+Saturdays,05:50,05:25,,,,,06:45,07:05
+Saturdays,18:00,via,17:40,,,,18:40,19:10
+Sundays,05:35,05:25,via,via,via,via,,07:05
+Sundays,17:30,17:20,via,via,via,via,,19:00

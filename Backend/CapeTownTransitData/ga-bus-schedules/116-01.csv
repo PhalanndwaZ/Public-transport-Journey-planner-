@@ -1,0 +1,19 @@
+day_type,HANOVER PARK,BONTEHEUWEL,NOOITGEDACHT,ELSIES RIVER,BEACONVALE IND,VOORTREKKER RD,PAROW IND,TYGERBERG HOSP,TYGERBERG STN
+Fridays,06:10,,,,,,,06:45,07:10
+Fridays,08:45,09:00,via,09:35,,via,,,09:45
+MondaysToFridays,05:55,,,,,,,06:35,06:55
+MondaysToFridays,11:45,12:00,via,12:35,,via,,,12:45
+MondaysToFridays,09:45,10:00,via,10:35,,via,,,10:45
+MondaysToFridays,10:45,11:00,via,11:35,,via,,,11:45
+MondaysToFridays,06:30,,,,via,,via,via,07:20
+MondaysToFridays,07:55,,,,,,,08:30,09:10
+Mondays_to_Thursdays,08:45,09:00,via,09:35,,via,,,09:45
+Mondays_to_Thursdays,06:10,,,,,,,06:45,07:10
+Mondays_to_Thursdays,15:15,15:30,via,16:05,,via,,,16:10
+PublicHolidays,06:10,,,,,,,06:45,07:00
+Saturdays,13:30,13:45,via,14:20,,via,,,14:40
+Saturdays,06:40,06:55,via,07:30,,via,,,07:40
+Saturdays,07:20,07:35,via,08:10,,via,,,08:20
+Saturdays,08:40,08:55,via,09:30,,via,,,09:50
+Saturdays,10:00,10:15,via,10:50,,via,,,11:00
+Saturdays,10:40,10:55,via,11:30,,via,,,11:40

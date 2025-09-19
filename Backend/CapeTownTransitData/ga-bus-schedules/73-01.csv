@@ -1,0 +1,11 @@
+day_type,ELECTRIC CITY,MALIBU,WEMBLEY PARK,WESBANK,BRENTWOOD PARK,EINDHOVEN,DELFT SAPS,LEIDEN,THE HAGUE,BISHOP LAVIS,KOEBERG STN
+MondaysToFridays,04:50,via,,,,,,,,,06:30
+MondaysToFridays,,,05:15,,,,,,,,06:35
+MondaysToFridays,,,,05:20,via,,,,,via,06:45
+MondaysToFridays,,,,05:25,via,,,,,via,06:45
+Mondays_to_Thursdays,,,,05:30,via,,,,,via,07:05
+Fridays,,,,05:30,via,,,,,via,07:05
+MondaysToFridays,,,,05:35,via,,,,,via,07:00
+MondaysToFridays,,,,,,,05:35,via,05:55,,07:30
+MondaysToFridays,,,,,,05:40,,,,,07:00
+MondaysToFridays,,,,,,,05:45,via,06:05,,07:10

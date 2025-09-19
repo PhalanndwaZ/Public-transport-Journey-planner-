@@ -1,0 +1,18 @@
+day_type,METRO,PINELANDS,NDABENI,HOWARD CENTRE,MUTUAL,EPPING IND,NYANGA TERM,PHILIPPI EAST SAP,SITE C,HARARE,VILLAGE 3,MAKHAZA
+MondaysToFridays,,,,,,06:10,06:35,,06:45,07:05,07:30,
+Fridays,,,,,,07:00,07:45,,08:00,,08:10,08:25
+Fridays,15:30,,,,,via,via,17:15,,,,
+Fridays,15:45,,,via,,,,,via,17:35,,via
+Mondays_to_Thursdays,,,,,,16:00,16:45,,17:00,,17:10,17:40
+Fridays,,,,,,16:00,16:45,,17:00,,17:10,17:40
+Mondays_to_Thursdays,16:30,,,via,,,,,,,,18:30
+Mondays_to_Thursdays,16:30,,,,,via,via,18:00,,,,
+Mondays_to_Thursdays,,,,,,16:30,17:15,,17:30,18:20,,
+Fridays,,,,,,16:30,17:15,,17:30,18:10,,
+Mondays_to_Thursdays,16:30,,,via,,,,,via,18:50,,
+Fridays,,17:00,17:05,via,17:15,via,17:50,,18:00,,18:30,
+Mondays_to_Thursdays,17:00,,,via,,,,,via,18:10,,via
+Fridays,17:00,,,via,,,,,via,18:30,,via
+Mondays_to_Thursdays,,17:00,17:05,via,17:15,via,17:50,,18:00,,19:00,
+Fridays,17:00,,,via,,,,,,,,18:30
+Saturdays,,,,,,16:00,16:25,,16:35,16:55,17:25,

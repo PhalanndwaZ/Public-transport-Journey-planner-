@@ -1,0 +1,16 @@
+day_type,PANORAMA MEDI CLINIC,N1 CITY,ELSIES RIVER,BELHAR,LEIDEN,EINDHOVEN,WESBANK,MALIBU,ELECTRIC CITY
+Fridays,07:15,,,,,,via,via,09:00
+Fridays,,19:30,via,via,,,,via,20:30
+MondaysToFridays,16:45,via,via,,via,18:20,,,
+MondaysToFridays,19:15,,,,,,via,via,20:30
+Mondays_to_Thursdays,07:15,,,,,,via,via,08:55
+Mondays_to_Thursdays,,19:30,via,via,,,,via,20:15
+PublicHolidays,07:10,,,,,,,via,08:20
+PublicHolidays,,17:30,,via,via,via,via,via,18:50
+PublicHolidays,19:15,,,,,,,via,20:05
+Saturdays,07:10,,,,,,via,via,09:00
+Saturdays,,17:30,,via,via,via,via,via,19:30
+Saturdays,19:10,,,,,,via,via,20:10
+Sundays,07:15,,,,,,via,via,08:45
+Sundays,,17:30,,via,via,via,via,via,18:50
+Sundays,19:10,,,,,,via,via,20:10

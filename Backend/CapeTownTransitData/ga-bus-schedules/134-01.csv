@@ -1,0 +1,17 @@
+day_type,CHATSWORTH,DASSENBERG,ATLANTIS,KALBASKRAAL,PHILADELPHIA,A.D.E.,N7 FREEWAY,KILLARNEY,MONTAGUE GARDENS,CAPE TOWN,ATLANTIS IND
+MondaysToFridays,04:40,via,,,via,,,05:30,,06:20,
+MondaysToFridays,05:30,via,,,,,,06:20,,06:50,
+MondaysToFridays,05:45,via,,via,,,via,,,07:15,
+MondaysToFridays,05:50,via,,via,,06:50,via,,,08:30,
+MondaysToFridays,06:10,,,,,,via,via,,07:40,
+MondaysToFridays,06:30,via,,,,,,07:20,via,08:40,
+MondaysToFridays,06:45,via,,,,,,07:35,,08:25,
+MondaysToFridays,07:05,07:15,,via,,,via,07:55,via,09:30,
+PublicHolidays,06:00,06:10,,,,,,07:20,via,08:00,06:40
+PublicHolidays,12:30,12:40,13:00,,,,,13:40,,14:20,
+Saturdays,06:00,via,,,,,,,06:55,,
+Saturdays,06:10,via,,,,,,07:00,,07:30,
+Saturdays,07:00,07:10,07:45,,,,,,,,
+Saturdays,08:00,08:10,08:30,,,,,,,,
+Saturdays,09:00,via,09:30,,,,,via,,11:10,
+Saturdays,09:00,via,,,,,,09:50,via,10:20,

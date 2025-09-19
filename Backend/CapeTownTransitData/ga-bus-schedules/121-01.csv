@@ -1,0 +1,24 @@
+day_type,BAYVIEW,SAN REMO,STRANDFONTEIN VILL,KENILWORTH CENTRE,CLAREMONT
+MondaysToFridays,05:20,via,via,via,07:00
+MondaysToFridays,05:40,via,via,via,07:30
+MondaysToFridays,06:00,via,via,via,08:00
+MondaysToFridays,06:30,via,via,via,08:00
+MondaysToFridays,07:00,via,via,via,08:30
+MondaysToFridays,07:40,via,via,via,09:00
+MondaysToFridays,08:10,via,via,via,09:00
+MondaysToFridays,09:00,,,,10:30
+MondaysToFridays,10:00,,,,11:00
+PublicHolidays,07:00,,,,07:50
+PublicHolidays,09:10,,,,10:00
+Saturdays,06:30,,,,07:20
+Saturdays,08:30,,,,09:30
+Saturdays,09:00,via,via,via,10:00
+Saturdays,09:30,via,via,via,10:30
+Saturdays,10:00,,,,11:00
+Saturdays,11:00,via,via,via,12:10
+Saturdays,06:55,via,via,via,08:35
+Saturdays,07:30,,,,09:00
+Sundays,06:30,,,,08:00
+Sundays,07:30,,,,09:00
+Sundays,08:30,,,,09:30
+Sundays,10:00,,,,11:00

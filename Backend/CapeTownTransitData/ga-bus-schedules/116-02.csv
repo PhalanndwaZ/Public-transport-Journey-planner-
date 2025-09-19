@@ -1,0 +1,27 @@
+day_type,TYGERBERG STN,TYGERBERG HOSP,PEPCOR FACTORY,BEACONVALE IND,PAROW IND,ELSIES RIVER,BISHOP LAVIS,NOOITGEDACHT,BONTEHEUWEL,NEWFIELDS,HANOVER PARK
+MondaysToFridays,09:45,,,,,09:55,via,via,10:30,,10:45
+MondaysToFridays,10:45,,,,,10:55,via,via,11:30,,11:45
+MondaysToFridays,11:45,,,,,11:55,via,via,12:30,,12:45
+Fridays,,13:15,via,,via,,,,,,13:50
+Mondays_to_Thursdays,13:30,,,,,13:40,via,via,14:15,,15:15
+Fridays,14:45,,,,,14:55,via,via,15:30,,15:45
+Mondays_to_Thursdays,14:45,,,,,14:55,via,via,15:30,,15:45
+Fridays,,15:20,15:30,,via,,,,,via,16:20
+Mondays_to_Thursdays,15:25,15:35,,,via,,,,,via,16:20
+Mondays_to_Thursdays,16:05,16:15,,,via,,,,,via,17:15
+Fridays,16:05,16:15,,,via,,,,,via,17:15
+Mondays_to_Thursdays,16:10,,,,,16:20,via,via,16:55,,17:30
+Mondays_to_Thursdays,,16:50,17:10,,via,,,,,via,17:45
+Fridays,16:55,,,via,via,,,,,,18:30
+Mondays_to_Thursdays,17:05,,,via,via,,,,,,18:10
+Fridays,17:15,17:25,,,via,,,,,via,18:00
+Mondays_to_Thursdays,17:15,17:25,,,via,,,,,via,18:00
+Saturdays,07:00,,,,,07:10,via,via,07:45,,08:00
+Saturdays,09:40,,,,,09:50,via,via,10:25,,10:40
+Saturdays,10:20,,,,,10:30,via,via,11:05,,11:20
+Saturdays,11:00,,,,,11:10,via,via,11:45,,12:00
+Saturdays,11:40,,,,,11:50,via,via,12:25,,12:40
+Saturdays,12:20,,,,,12:30,via,via,13:05,,13:15
+Saturdays,13:00,,,,,13:10,via,via,13:45,,14:00
+Saturdays,14:30,,,,,14:40,via,via,15:15,,15:30
+Saturdays,16:30,,,,,16:40,via,via,17:15,,17:50

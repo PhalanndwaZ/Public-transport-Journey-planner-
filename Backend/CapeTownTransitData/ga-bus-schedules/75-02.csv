@@ -1,0 +1,27 @@
+day_type,DURBANVILLE,TYGER VALLEY CENTRE,SPEKENAM,BELLVILLE,SACKS CIRCLE,BELHAR,LEIDEN,VOORBRUG,EINDHOVEN,SYMPHONY WAY,BRENTWOOD PARK,WESBANK,MFULENI,MALIBU,BLACKHEATH,KLEINVLEI,ELECTRIC CITY
+Fridays,,13:50,,14:15,,via,via,via,via,,,via,via,via,via,,16:00
+Fridays,,,,14:15,,,,,,,via,via,via,via,via,via,15:45
+Fridays,15:00,,15:40,15:30,,,,,,,,via,,via,via,via,17:00
+Fridays,,,,16:00,,,,,,,via,via,17:00,via,,,
+Fridays,,,,18:45,,,,,via,via,,via,via,via,via,via,19:50
+Fridays,16:30,,,17:00,via,,,,,via,,via,18:20,via,,,
+Fridays,,,,16:35,,,,,,,,via,via,via,,,17:55
+Fridays,,,,17:00,,,,,,,,,,via,via,via,18:40
+Fridays,,,,17:00,,,,,,,,,,via,via,via,18:30
+MondaysToFridays,,12:10,,12:25,,via,via,via,via,,,via,via,via,via,,14:10
+MondaysToFridays,,13:00,,13:15,,via,via,via,via,,,via,via,via,via,,15:15
+MondaysToFridays,,19:30,,19:45,,via,via,via,via,,,via,via,via,via,,21:20
+MondaysToFridays,17:10,,,,,,,,,,,via,18:20,,,,
+Mondays_to_Thursdays,,,,18:45,,,,,via,via,,via,via,via,via,via,19:50
+Mondays_to_Thursdays,,,,17:30,,,,,,,,,,via,via,via,18:45
+Mondays_to_Thursdays,,,,17:00,,,,,,,,,,via,via,via,18:30
+Mondays_to_Thursdays,,,,16:35,,,,,,,,via,via,via,,,17:45
+Mondays_to_Thursdays,16:30,,17:10,17:00,,,,,,,,via,,via,via,via,18:30
+Mondays_to_Thursdays,16:30,,,17:00,via,,,,,via,,via,18:20,via,,,
+Mondays_to_Thursdays,,,,16:00,,,,,,,via,via,17:00,via,,,
+Mondays_to_Thursdays,,,,14:15,,,,,,,via,via,via,via,via,via,15:50
+Mondays_to_Thursdays,,13:50,,14:15,,via,via,via,via,,,via,via,via,via,,16:15
+PublicHolidays,,,,17:10,,,,,via,via,,via,via,via,via,via,19:00
+PublicHolidays,,17:15,,17:30,,via,via,via,via,,,via,via,via,via,,18:30
+Saturdays,,19:30,,19:45,,via,via,via,via,,,via,via,via,,,20:50
+Sundays,,17:15,,17:30,,via,via,via,via,,,via,via,via,via,,18:30

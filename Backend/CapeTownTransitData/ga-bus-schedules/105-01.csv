@@ -1,0 +1,10 @@
+day_type,N7 FREEWAY,KILLARNEY,DU NOON,CONTERMANSKLOOF RD,DURBANVILLE,BELLVILLE
+Fridays,via,07:05,,,07:35,08:15
+Fridays,,07:15,07:30,via,07:50,08:20
+Fridays,via,15:30,,,16:00,
+MondaysToFridays,,06:10,06:25,via,06:45,07:10
+MondaysToFridays,,06:30,06:45,via,07:05,07:50
+Mondays_to_Thursdays,via,07:05,,,07:35,08:15
+Mondays_to_Thursdays,,07:15,07:30,via,07:50,08:20
+Mondays_to_Thursdays,via,15:30,,,16:00,
+PublicHolidays,,07:15,07:30,,07:50,08:30

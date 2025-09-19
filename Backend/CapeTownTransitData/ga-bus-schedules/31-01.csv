@@ -1,0 +1,26 @@
+day_type,CAPE TOWN,N2 FREEWAY,MOWBRAY,BRIDGETOWN,HEIDEVELD,MANENBERG
+Fridays,14:00,,14:30,,,15:10
+Fridays,15:00,,15:30,,,16:30
+Fridays,17:35,via,,,via,18:15
+MondaysToFridays,08:00,via,,06:45,,06:45
+MondaysToFridays,12:00,,12:30,,,13:00
+MondaysToFridays,13:00,,13:30,,,14:00
+MondaysToFridays,16:00,,16:30,,,17:00
+Mondays_to_Thursdays,14:00,,14:30,,,15:30
+Mondays_to_Thursdays,15:00,,15:30,,,16:00
+Mondays_to_Thursdays,17:40,,18:00,,18:20,18:40
+PublicHolidays,15:00,,15:20,,15:40,16:00
+PublicHolidays,14:00,,14:20,,14:40,15:05
+PublicHolidays,12:20,,12:40,,13:00,13:20
+PublicHolidays,11:00,,,,via,12:30
+PublicHolidays,07:00,,,,via,08:00
+PublicHolidays,18:20,,18:40,,19:00,19:20
+PublicHolidays,16:20,,16:40,,17:00,17:20
+Saturdays,17:00,,17:20,,17:40,18:00
+Saturdays,18:00,,18:20,,18:40,19:00
+Saturdays,15:00,,15:20,,15:40,16:00
+Saturdays,13:30,,14:00,,,14:30
+Saturdays,12:00,,,,via,13:00
+Saturdays,08:50,,09:20,,,09:50
+Saturdays,16:00,,16:20,,16:40,17:00
+Saturdays,12:50,,13:20,,,13:50

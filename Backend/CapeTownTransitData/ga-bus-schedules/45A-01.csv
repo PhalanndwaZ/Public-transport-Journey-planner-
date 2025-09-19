@@ -1,0 +1,14 @@
+day_type,PHILIPPI EAST SAP,NYANGA TERM,ELSIES RIVER,N1 CITY,ROUTE B,ROUTE A,PANORAMA MEDI CLINIC
+Fridays,,08:10,08:40,via,,via,09:00
+Fridays,,,13:45,via,,via,14:05
+MondaysToFridays,05:45,05:55,06:25,via,,via,07:40
+MondaysToFridays,06:00,06:10,06:40,via,,via,07:25
+MondaysToFridays,06:15,06:25,06:55,via,,via,08:00
+MondaysToFridays,,07:20,07:50,via,,via,08:20
+Mondays_to_Thursdays,,08:10,08:40,via,,via,09:10
+Mondays_to_Thursdays,,,13:45,via,,via,14:05
+Mondays_to_Thursdays,,,15:05,via,,via,15:35
+PublicHolidays,,07:00,07:30,via,via,,08:00
+Saturdays,,07:00,07:30,via,,via,08:00
+Saturdays,,08:10,08:40,via,,via,09:10
+Sundays,,07:00,07:30,via,via,,08:30

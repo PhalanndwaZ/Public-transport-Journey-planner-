@@ -1,0 +1,9 @@
+day_type,BELLVILLE,DURBANVILLE,UWC,TYGERBERG HOSP,PAROW IND,BEACONVALE IND,N7 FREEWAY,MONTAGUE GARDENS,KILLARNEY GARDENS,KILLARNEY,ATLANTIS,MAMRE (PARADISE RD),DASSENBERG,CHATSWORTH,BLAAUWBERG RIDGE
+MondaysToFridays,05:50,,,,,,,via,,07:05,,,,,07:45
+Mondays_to_Thursdays,06:30,,,,,,,via,,07:45,,,,,08:00
+Fridays,06:30,,,,,,,via,,07:45,,,,,08:10
+Fridays,15:40,,via,,15:55,via,via,,,,via,17:20,,,
+MondaysToFridays,17:00,17:20,via,16:20,,,,,,,,,via,18:25,
+Mondays_to_Thursdays,16:20,,via,,16:35,via,via,,,,via,18:00,,,
+Mondays_to_Thursdays,16:40,,via,,16:55,via,via,,,,via,18:20,,,
+Saturdays,06:30,,,,,,,via,07:30,via,,,,,

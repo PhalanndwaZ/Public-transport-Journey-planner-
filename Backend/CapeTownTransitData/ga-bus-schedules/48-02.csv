@@ -1,0 +1,14 @@
+day_type,ALEXANDRA HOSP,VALKENBERG HOSP,MOWBRAY,ROCKLANDS,MANDALAY,LOST CITY,TOWN CENTRE,PANORAMA MEDI CLINIC,TAFELSIG LOST CITY
+Fridays,16:05,,16:15,18:00,,,,,
+Fridays,,,,,,,,16:50,18:00
+MondaysToFridays,,,,,,,06:15,07:30,
+MondaysToFridays,07:05,,07:15,08:30,,,,,
+MondaysToFridays,16:05,via,16:10,,via,,17:40,,
+Mondays_to_Thursdays,16:05,,16:15,18:00,,,,,
+Mondays_to_Thursdays,,,,,,,,16:20,18:00
+PublicHolidays,07:05,via,07:15,,08:40,,08:20,,
+PublicHolidays,19:05,via,19:15,,20:20,,20:05,,
+Saturdays,07:05,,07:15,,08:40,,,,
+Saturdays,19:10,via,19:15,,via,,20:40,,
+Sundays,07:05,via,07:15,via,08:30,via,08:05,,
+Sundays,19:15,via,19:25,via,20:45,via,20:15,,

@@ -1,0 +1,11 @@
+day_type,TOWN CENTRE,R300 FREEWAY,LA BELLE RD,OLD PAARL RD,BRACKENFELL BLVD,CAPE GATE
+MondaysToFridays,05:15,via,via,via,via,06:35
+MondaysToFridays,05:35,via,via,via,via,08:20
+MondaysToFridays,05:50,via,via,via,via,08:20
+MondaysToFridays,06:05,via,via,via,via,08:20
+MondaysToFridays,06:20,via,via,via,via,08:00
+MondaysToFridays,06:35,via,via,via,via,08:00
+MondaysToFridays,07:00,via,via,via,via,08:30
+PublicHolidays,07:00,via,via,via,via,08:10
+Saturdays,06:45,via,via,via,via,08:15
+Sundays,06:45,via,via,via,via,08:00

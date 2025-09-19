@@ -1,0 +1,18 @@
+day_type,WYNBERG,BAMBOESVLEI RD,OTTERY HYPERMARKET,KLEINVLEI,BLACKHEATH,MALIBU,EINDHOVEN RD,MFULENI,VOORBRUG,ROOSENDAL,THE HAGUE,BELHAR,ELECTRIC CITY
+Fridays,13:00,,,,,,via,,,,14:00,,
+Fridays,14:00,via,,,,,via,,,,15:30,,
+Fridays,14:15,,,via,via,via,,via,,,,,15:25
+Fridays,15:00,,,,,,via,,,,16:20,16:30,
+Mondays_to_Thursdays,15:00,,,,,,via,,,,16:20,16:30,
+Mondays_to_Thursdays,15:40,,,via,via,via,,via,,,,,17:30
+Fridays,15:40,,,via,via,via,,via,,,,,17:20
+Mondays_to_Thursdays,,,,via,via,17:30,,,,,,,via
+Fridays,,,,via,via,17:30,,,,,,,via
+Mondays_to_Thursdays,17:00,via,,,,,via,,via,via,,18:35,
+Fridays,17:00,via,,,,,via,,via,via,,18:45,
+Fridays,17:00,via,17:15,,,,via,,,,18:25,,
+Mondays_to_Thursdays,17:00,via,17:15,,,,via,,,,18:25,,
+MondaysToFridays,17:10,,,via,via,via,,via,,,,,18:55
+Mondays_to_Thursdays,17:25,,,,,,via,,,,18:10,,
+Fridays,17:25,,,,,,via,,,,18:40,,
+Fridays,17:40,,,,,,via,,,,18:50,,

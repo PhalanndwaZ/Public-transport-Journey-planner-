@@ -1,0 +1,11 @@
+day_type,BELLVILLE,DURBANVILLE,VISSERSHOK RD,CONTERMANSKLOOF,DU NOON,KILLARNEY GARDENS,KILLARNEY,MONTAGUE GARDENS,BLAAUWBERG RIDGE,DASSENBERG,ATLANTIS,ATLANTIS IND
+MondaysToFridays,14:15,15:00,via,,,,15:30,,,,,
+Mondays_to_Thursdays,,,,,,,14:25,,,via,15:30,via
+MondaysToFridays,,16:00,via,,,,17:15,,,,,
+Mondays_to_Thursdays,16:00,16:20,,,,,16:50,,18:10,,,
+Fridays,16:00,16:20,,,,,16:50,,18:00,,,
+MondaysToFridays,16:45,17:05,,,,,17:35,,18:00,,,
+Fridays,,,,,,17:05,17:00,,,,,
+Mondays_to_Thursdays,17:15,17:35,,via,via,,18:00,,,,18:50,
+MondaysToFridays,,17:45,via,,,,18:30,,,,,
+Saturdays,06:30,,,,,07:30,via,via,,,,

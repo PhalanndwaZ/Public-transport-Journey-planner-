@@ -1,0 +1,14 @@
+day_type,MANENBERG SAP,HANOVER PARK,BAMBOESVLEI RD,WYNBERG
+Fridays,06:45,06:55,,07:30
+Fridays,,18:10,,19:00
+MondaysToFridays,05:45,,via,06:35
+MondaysToFridays,06:10,06:30,via,07:15
+MondaysToFridays,07:00,,via,08:00
+MondaysToFridays,,07:25,,08:00
+MondaysToFridays,07:40,,via,08:20
+MondaysToFridays,08:30,,via,09:20
+Mondays_to_Thursdays,06:45,06:55,,07:20
+PublicHolidays,06:40,06:50,,07:20
+PublicHolidays,07:20,07:30,,08:00
+Saturdays,06:10,06:20,,07:10
+Saturdays,07:30,07:40,,08:30

@@ -1,0 +1,22 @@
+day_type,MAKHAZA,HARARE,ROUTE 2,SITE C,MEW WAY,WYNBERG,BROAD RD,KILDARE RD,WETTON RD,MAIN RD,CONSTANTIA MAIN RD,HOUT BAY MAIN RD,VALLEY RD,VICTORIA RD,HOUT BAY BEACH,HOUT BAY HARBOUR
+Fridays,,05:30,via,05:55,,,,,via,via,via,via,,via,07:10,08:20
+Fridays,,,,,,08:00,via,via,via,via,via,via,,via,via,08:45
+Fridays,06:10,,,06:40,,,,,via,via,via,via,,via,07:45,08:30
+MondaysToFridays,05:10,,,05:40,,,,,via,via,via,via,,via,06:45,07:30
+MondaysToFridays,,,,,,08:40,via,via,via,via,via,via,,via,via,09:30
+MondaysToFridays,,,,,,08:10,via,via,via,via,via,via,,via,via,09:00
+MondaysToFridays,06:30,,,07:00,,,,,via,via,via,via,,via,08:05,09:00
+MondaysToFridays,06:20,,,06:50,,,,,via,via,via,via,,via,07:55,08:50
+MondaysToFridays,,,,,,07:20,via,via,via,via,via,via,via,via,via,08:45
+MondaysToFridays,,05:20,via,,via,,,,via,via,via,via,,via,via,07:15
+MondaysToFridays,05:20,,,,via,,,,via,via,via,via,,via,via,07:40
+MondaysToFridays,,06:10,via,06:35,,,,,via,via,via,via,,via,07:50,08:20
+Mondays_to_Thursdays,06:10,,,06:40,,,,,via,via,via,via,,via,07:45,08:40
+Mondays_to_Thursdays,,,,,,08:00,via,via,via,via,via,via,,via,via,08:50
+Mondays_to_Thursdays,,05:30,via,05:55,,,,,via,via,via,via,,via,07:10,08:20
+PublicHolidays,,06:20,via,06:45,,,,,via,via,via,via,,via,08:00,08:10
+Saturdays,,06:00,via,06:25,,,,,via,via,via,via,,via,07:40,08:10
+Saturdays,,06:20,via,06:45,,,,,via,via,via,via,,via,08:00,08:10
+Saturdays,07:00,,,07:30,,,,,via,via,via,via,,via,08:35,08:50
+Sundays,07:00,,,07:30,,,,,via,via,via,via,,via,08:35,08:50
+Sundays,,06:15,via,06:45,,,,,via,via,via,via,,via,08:00,08:30

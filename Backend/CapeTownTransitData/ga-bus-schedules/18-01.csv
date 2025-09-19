@@ -1,0 +1,8 @@
+day_type,MAKHAZA,HARARE,ROUTE 1,ROUTE 2,SITE C,PHILIPPI EAST SAP,CROSS RDS,NY 108,GUGULETU,MUIZENBERG,SIMONSTOWN,MURDOCH VALLEY
+MondaysToFridays,,,,,,04:55,via,via,via,via,via,06:50
+MondaysToFridays,05:15,,,,,,,,,via,via,07:15
+Fridays,05:20,,via,,05:40,,,,,via,via,07:45
+Mondays_to_Thursdays,05:20,,via,,05:40,,,,,via,via,07:45
+MondaysToFridays,,,,,,05:45,,via,via,,07:10,08:25
+Fridays,,05:45,,via,06:05,,,,,via,via,07:55
+Mondays_to_Thursdays,,05:45,,via,06:05,,,,,via,via,07:55

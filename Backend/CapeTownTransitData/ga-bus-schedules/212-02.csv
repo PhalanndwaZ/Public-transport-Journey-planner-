@@ -1,0 +1,19 @@
+day_type,TYGERBERG HOSP,PAROW,UWC,BELLVILLE,DURBANVILLE,N7 FREEWAY,PHILADELPHIA,KALBASKRAAL,CHATSWORTH,DASSENBERG,ABBOTSDALE,MALMESBURY
+Fridays,,,16:00,16:20,via,via,via,,,,via,18:00
+MondaysToFridays,16:20,via,via,17:00,17:20,,via,via,18:25,via,,
+Mondays_to_Thursdays,,,16:30,16:50,via,via,via,,,,via,18:00
+Saturdays,,,,,,,,via,07:50,,,08:35
+Saturdays,,,,,,,,08:00,,,,08:40
+Saturdays,,,,,,,,,,08:15,,08:55
+Saturdays,,,,,,,,via,09:00,,,09:40
+Saturdays,,,,,,,,09:00,,,,09:40
+Saturdays,,,,,,,,,,09:10,,09:40
+Saturdays,,,,,,,09:10,,,,,09:55
+Saturdays,,,,,,,,,10:50,10:50,,11:25
+Saturdays,,,,,,,,10:50,,,,11:20
+Saturdays,,,,,,,,via,11:40,,,12:00
+Saturdays,,,,,,,,11:40,,,,12:00
+Saturdays,,,,,,,,,,12:00,,12:30
+Saturdays,,,,,,,,12:40,,,,13:00
+Saturdays,,,,,,,,,12:40,,,13:00
+Saturdays,,,,13:30,14:00,,,via,,,via,15:00

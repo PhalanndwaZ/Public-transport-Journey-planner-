@@ -1,0 +1,11 @@
+day_type,CHATSWORTH,DASSENBERG,MAMRE (PARADISE RD),ATLANTIS,SAXONSEA,BLAAUWBERG RIDGE,KILLARNEY,MONTAGUE GARDENS,N7 FREEWAY,BEACONVALE IND,PAROW IND,TYGERBERG HOSP,DE LA REY STR,UWC,BELLVILLE
+MondaysToFridays,05:10,via,,,,,,,,,via,06:50,,06:35,06:30
+MondaysToFridays,,,05:30,via,,,,,via,via,07:00,,via,via,07:15
+MondaysToFridays,,,,,05:50,,,,via,via,via,,via,via,07:30
+MondaysToFridays,,,06:00,via,,,,,via,via,07:30,,via,via,08:20
+Fridays,,,,,,14:00,14:15,via,,,,,,,16:00
+Fridays,,,,,,16:00,16:15,via,,,,,,,18:05
+Mondays_to_Thursdays,,,,,,16:15,16:30,via,,,,,,,18:05
+Mondays_to_Thursdays,,,,,,16:45,17:00,via,,,,,,,18:20
+Fridays,,,,,,16:45,17:00,via,,,,,,,18:00
+Saturdays,,,,,,13:15,13:30,via,,,,,,,14:45

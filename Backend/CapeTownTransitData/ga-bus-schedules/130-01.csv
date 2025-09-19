@@ -1,0 +1,7 @@
+day_type,MALIBU,MFULENI,BLACKHEATH,ELECTRIC CITY,WESBANK,FREEWAY,EPPING IND
+MondaysToFridays,,,05:05,05:50,,via,06:40
+Mondays_to_Thursdays,05:05,05:15,,,via,,06:20
+Fridays,05:05,05:15,,,via,,07:00
+Fridays,via,05:25,via,05:55,,,07:15
+Mondays_to_Thursdays,via,05:25,via,05:55,,,07:00
+Saturdays,via,via,via,06:20,via,,07:40

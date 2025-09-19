@@ -1,0 +1,11 @@
+day_type,BLAAUWBERG,ATLANTIS,N7 FREEWAY,KILLARNEY GARDENS,KILLARNEY,MONTAGUE GARDENS,CENTURY CITY,NEWFIELDS,HANOVER PARK
+MondaysToFridays,,05:20,via,,06:00,06:10,,,07:15
+MondaysToFridays,,08:00,via,,08:40,08:50,,,10:30
+MondaysToFridays,,,,15:30,15:35,via,,,16:45
+Mondays_to_Thursdays,,,,,16:30,via,,,17:40
+Fridays,,,,,16:30,via,,,17:30
+Mondays_to_Thursdays,,,,,17:05,,17:35,,
+Fridays,,,,,17:05,,17:35,,
+Saturdays,,,,,06:45,via,,via,08:10
+Saturdays,,,,,13:00,via,13:15,,14:00
+Saturdays,17:00,,,,17:15,,17:30,,18:30

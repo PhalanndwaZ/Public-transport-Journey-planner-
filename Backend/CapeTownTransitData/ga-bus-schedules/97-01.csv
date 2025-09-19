@@ -1,0 +1,15 @@
+day_type,MAKHAZA,HARARE,VILLAGE 3,SITE C,PHILIPPI EAST SAP,NYANGA TERM,EPPING IND,HOWARD CENTRE,MUTUAL,NDABENI STN,METRO
+Mondays_to_Thursdays,05:00,,,,,,,via,,,06:40
+Mondays_to_Thursdays,,05:00,,via,,,,via,,,06:50
+Fridays,,05:00,,via,,,,via,,,07:00
+Fridays,05:00,,,,,,,via,,,07:00
+MondaysToFridays,05:15,,,,,,,via,,,07:00
+MondaysToFridays,,05:15,,via,,,,via,,,07:00
+MondaysToFridays,,,,,05:30,,via,,,,07:30
+Mondays_to_Thursdays,,,05:35,06:15,,06:35,via,via,via,08:00,
+Fridays,,,05:35,06:15,,06:35,via,via,via,07:30,
+Mondays_to_Thursdays,,,,,,05:50,,,07:30,,
+Fridays,,,,,,05:50,,,06:45,,
+Fridays,,,,,,06:00,via,,,,07:40
+Fridays,,12:45,12:30,13:00,,13:15,14:30,,,,
+Mondays_to_Thursdays,,12:45,12:30,13:00,,13:15,14:30,,,,

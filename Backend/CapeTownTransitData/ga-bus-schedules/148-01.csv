@@ -1,0 +1,11 @@
+day_type,BELHAR,SYMPHONY WAY,DELFT MAIN RD,THE HAGUE,EINDHOVEN,LEIDEN AVE,HINDLE RD,MALIBU,MFULENI,ELECTRIC CITY,JAKES GERWEL DRV,GOVAN MBEKI RD,WETTON RD,WYNBERG
+MondaysToFridays,,,,,,,,04:40,,,,via,via,
+MondaysToFridays,,,,,,,via,via,05:10,04:45,via,via,via,06:20
+MondaysToFridays,,,,05:05,,,,,,,,via,,06:15
+MondaysToFridays,,,,05:30,,,,,,,,via,,07:05
+MondaysToFridays,06:00,,,06:15,,,,,,,,via,,07:20
+MondaysToFridays,,via,via,06:15,,via,,,,,,via,,07:50
+MondaysToFridays,,,,06:45,,,,,,,,via,,08:20
+Saturdays,,via,via,,via,,via,via,06:00,,,via,via,07:00
+Saturdays,,,,06:30,,,,,,,,via,,07:30
+Saturdays,,via,via,,via,,via,via,08:00,,,via,via,09:10

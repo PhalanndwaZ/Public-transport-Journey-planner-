@@ -1,0 +1,16 @@
+day_type,MANENBERG,HANOVER PARK,TURFHALL RD,KENILWORTH CENTRE,CLAREMONT
+Fridays,07:10,07:20,via,,08:30
+Fridays,08:20,08:30,via,,09:00
+MondaysToFridays,06:00,06:20,via,,06:55
+MondaysToFridays,07:55,08:05,via,via,09:10
+Mondays_to_Thursdays,07:10,07:20,via,,08:15
+Mondays_to_Thursdays,15:10,15:20,via,,16:15
+Mondays_to_Thursdays,15:45,15:55,via,,17:00
+PublicHolidays,06:30,06:40,via,,07:10
+PublicHolidays,07:30,07:40,via,,08:10
+PublicHolidays,13:20,13:30,via,,14:00
+PublicHolidays,16:20,16:30,via,,17:00
+PublicHolidays,17:40,17:50,via,,18:20
+Saturdays,,13:15,via,,14:00
+Saturdays,16:50,17:00,via,,17:30
+Sundays,07:00,07:10,via,,07:40

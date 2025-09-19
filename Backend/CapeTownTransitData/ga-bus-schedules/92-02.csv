@@ -1,0 +1,18 @@
+day_type,KOEBERG STN,MAITLAND,TOWN CENTRE,BEACON VALLEY,TAFELSIG LOST CITY
+Fridays,14:10,,15:45,,
+Fridays,14:30,,,16:00,
+Fridays,15:40,,,via,17:30
+Fridays,15:50,16:00,,,17:00
+Fridays,16:00,,17:30,,
+Fridays,16:35,16:45,,,18:00
+Mondays_to_Thursdays,16:35,,18:10,,
+Mondays_to_Thursdays,16:35,16:45,,,18:00
+Mondays_to_Thursdays,16:40,16:50,,,18:20
+Mondays_to_Thursdays,16:45,,,via,18:05
+Fridays,16:45,,,via,18:10
+Mondays_to_Thursdays,16:55,,18:15,,
+MondaysToFridays,16:55,,,18:30,
+MondaysToFridays,16:55,,,via,18:15
+Mondays_to_Thursdays,17:00,,,via,18:30
+Mondays_to_Thursdays,17:00,,18:20,,
+Saturdays,13:15,,,via,14:30

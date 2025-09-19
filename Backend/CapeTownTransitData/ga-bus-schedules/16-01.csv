@@ -1,0 +1,13 @@
+day_type,CAPE TOWN,KILLARNEY,PARKLANDS,SUNNINGDALE,BLOUBERGSTRAND,BLOUBERG,BLAAUWBERG RIDGE,MELKBOS,KOEBERG POWER STN
+MondaysToFridays,,07:20,via,via,,,08:20,,
+MondaysToFridays,,07:30,via,via,,,08:30,,
+Mondays_to_Thursdays,08:00,08:40,,,,via,,via,09:20
+MondaysToFridays,,08:00,via,via,,,08:30,,
+Fridays,08:00,08:40,,,,via,,via,09:20
+MondaysToFridays,,08:15,via,via,,,08:45,,
+Fridays,,08:35,via,via,,,09:00,,
+Mondays_to_Thursdays,,08:35,via,via,,,09:20,,
+MondaysToFridays,,17:15,,,,,17:55,,
+Saturdays,,12:35,via,via,,,12:55,,
+Saturdays,,13:50,,,14:00,,,,
+Saturdays,,14:50,,,,,15:00,,

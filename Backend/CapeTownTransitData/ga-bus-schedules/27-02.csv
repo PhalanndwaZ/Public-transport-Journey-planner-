@@ -1,0 +1,25 @@
+day_type,BONTEHEUWEL,BRIDGETOWN,N2 FREEWAY,VOORTREKKER RD,MOWBRAY,CAPE TOWN
+Fridays,05:40,06:00,via,,,06:40
+Fridays,06:20,,via,,,07:45
+Fridays,09:10,,,,09:45,10:10
+Fridays,14:40,,,,15:15,15:20
+Fridays,13:10,,,,13:45,14:10
+MondaysToFridays,06:30,,,via,,07:50
+MondaysToFridays,08:00,,,,08:35,09:30
+MondaysToFridays,10:10,,,,10:45,11:10
+MondaysToFridays,12:10,,,,12:45,13:10
+Mondays_to_Thursdays,05:40,06:00,via,,,06:20
+Mondays_to_Thursdays,15:00,,,,15:35,16:30
+Mondays_to_Thursdays,14:00,,,,14:30,14:45
+Mondays_to_Thursdays,13:10,,,,13:45,14:15
+Mondays_to_Thursdays,09:10,,,,09:45,10:10
+Mondays_to_Thursdays,06:20,,via,,,08:00
+PublicHolidays,06:30,06:50,,,07:10,07:30
+PublicHolidays,08:00,08:20,,,08:40,09:30
+PublicHolidays,08:30,08:50,,,09:10,09:30
+PublicHolidays,09:30,09:50,,,10:10,10:30
+PublicHolidays,10:30,10:50,,,11:10,11:30
+Saturdays,06:40,,,,07:15,07:40
+Saturdays,08:00,,,,08:35,09:00
+Saturdays,10:40,,,,11:15,11:30
+Saturdays,16:30,16:50,,,17:10,17:30

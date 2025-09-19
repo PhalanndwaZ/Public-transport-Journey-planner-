@@ -1,0 +1,13 @@
+day_type,ALEXANDRA HOSP,VALKENBERG HOSP,MUTUAL,CONRADIE HOSP,THORNTON,ELSIES RIVER,BELHAR,DELFT,BRENTWOOD PARK,WESBANK,MALIBU,MFULENI,BLACKHEATH,BLUE DOWNS,ELECTRIC CITY
+Fridays,16:00,via,,via,,via,via,,,via,via,via,via,via,18:10
+Fridays,19:15,via,via,via,via,,via,via,,via,via,,via,via,20:30
+MondaysToFridays,07:10,,,via,,via,via,,via,via,via,via,via,via,09:00
+Mondays_to_Thursdays,16:00,via,,via,,via,via,,,via,via,via,via,via,18:10
+Mondays_to_Thursdays,19:15,via,via,via,via,,via,via,,via,via,,via,via,20:45
+PublicHolidays,via,07:10,,via,,via,via,,,,,,,via,08:30
+PublicHolidays,16:10,,,16:15,,via,via,via,,,,,,via,17:20
+PublicHolidays,via,19:15,,via,,via,via,,,,,,,via,20:15
+Saturdays,07:10,via,,via,,via,via,,,via,via,via,via,via,08:30
+Saturdays,19:15,via,,via,,via,via,,,via,via,via,via,via,20:20
+Sundays,07:10,via,,via,,via,via,,,via,via,via,via,via,08:30
+Sundays,19:15,via,,via,,via,via,,,via,via,via,via,via,21:00

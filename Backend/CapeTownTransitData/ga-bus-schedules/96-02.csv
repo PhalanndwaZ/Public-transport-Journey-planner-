@@ -1,0 +1,18 @@
+day_type,THE HAGUE,VOORBRUG,EINDHOVEN,ROCKLANDS,TOWN CENTRE
+Fridays,08:10,via,via,,09:00
+MondaysToFridays,07:00,via,,via,08:15
+MondaysToFridays,10:10,via,via,,10:50
+MondaysToFridays,14:10,via,via,,15:00
+Mondays_to_Thursdays,08:10,via,via,,08:50
+PublicHolidays,08:00,via,via,,09:00
+PublicHolidays,10:00,via,via,,10:55
+PublicHolidays,14:00,via,via,,15:05
+Saturdays,09:30,via,via,,10:30
+Saturdays,12:00,via,via,,12:40
+Saturdays,08:00,via,via,,09:00
+Saturdays,10:30,via,via,,11:00
+Saturdays,11:00,via,via,,12:00
+Sundays,08:00,via,via,,08:40
+Sundays,08:40,via,via,,10:00
+Sundays,09:40,via,via,,10:40
+Sundays,14:40,via,via,,15:40

@@ -1,0 +1,9 @@
+day_type,ELECTRIC CITY,MALIBU,WESBANK,DELFT,BELHAR,ELSIES RIVER,CONRADIE HOSP,VALKENBERG HOSP,ALEXANDRA HOSP
+MondaysToFridays,04:40,,via,,,,,via,06:40
+MondaysToFridays,16:50,via,via,via,via,,via,,19:15
+PublicHolidays,05:30,,,via,via,via,via,,06:45
+PublicHolidays,17:20,via,via,via,via,,via,,19:00
+Saturdays,05:20,via,via,via,via,via,via,via,07:10
+Saturdays,17:00,via,via,via,via,via,via,via,19:15
+Sundays,05:30,via,via,via,via,via,via,via,07:10
+Sundays,17:10,via,via,via,via,via,via,via,19:15
