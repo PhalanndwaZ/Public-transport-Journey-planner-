@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class DataLoader {
     public Map<String, Integer> stops = new HashMap<>();
@@ -12,11 +13,25 @@ public class DataLoader {
     public Map<Integer, List<String>> stopToRoutes = new HashMap<>();
     public Map<Integer, StopLocation> stopDetails = new HashMap<>();
     public Map<String, StopLocation> stopNameToDetails = new HashMap<>();
+    public Map<Integer, List<WalkingEdge>> walkingEdges = new HashMap<>();
 
-    // Coordinate lookup maps from the file
-    private Map<String, double[]> stationNameMap = new HashMap<>(); // Station Name -> coords
-    private Map<String, double[]> stationIdMap = new HashMap<>(); // StationID -> coords
-    private Set<String> standaloneStations = new HashSet<>(); // Stations without coords
+    private static final double EARTH_RADIUS_KM = 6371.0;
+    private static final double WALKING_SPEED_KMH = 5.0;
+
+    private void storeStationCoordinate(String rawName, double lat, double lon) {
+        if (rawName == null) return;
+        String normalized = rawName.trim().toUpperCase(Locale.ROOT);
+        if (normalized.isEmpty()) return;
+        stationNameMap.put(normalized, new double[]{lat, lon});
+        String cleaned = cleanName(normalized);
+        if (!cleaned.isEmpty()) {
+            stationNameMap.putIfAbsent(cleaned, new double[]{lat, lon});
+        }
+    }
+
+    private Map<String, double[]> stationNameMap = new HashMap<>();
+    private Map<String, double[]> stationIdMap = new HashMap<>();
+    private Set<String> standaloneStations = new HashSet<>();
     private int stopCounter = 0;
 
     // ============= Generic CSV Loader =============
@@ -39,13 +54,10 @@ public class DataLoader {
         standaloneStations.clear();
 
         List<String[]> rows = loadCSV(filePath);
-        if (rows.isEmpty())
-            return;
+        if (rows.isEmpty()) return;
 
         for (int r = 1; r < rows.size(); r++) {
             String[] row = rows.get(r);
-
-            // Handle rows with coordinates (4+ columns)
             if (row.length >= 4) {
                 String stationName = row[0].trim().toUpperCase();
                 String stationId = row[1].trim().toUpperCase();
@@ -56,20 +68,81 @@ public class DataLoader {
                     try {
                         double lat = Double.parseDouble(latStr);
                         double lon = Double.parseDouble(lonStr);
-
-                        stationNameMap.put(stationName, new double[] { lat, lon });
-                        stationIdMap.put(stationId, new double[] { lat, lon });
+                        storeStationCoordinate(stationName, lat, lon);
+                        stationIdMap.put(stationId, new double[]{lat, lon});
                     } catch (NumberFormatException e) {
-                        // Skip invalid coordinates
+                        // Ignore invalid coords
                     }
                 }
-            }
-            // Handle standalone station names (without coordinates)
-            else if (row.length >= 1) {
+            } else if (row.length >= 1) {
                 String stationName = row[0].trim().toUpperCase();
-                if (!stationName.isEmpty()) {
-                    standaloneStations.add(stationName);
-                }
+                if (!stationName.isEmpty()) standaloneStations.add(stationName);
+            }
+        }
+    }
+
+    public void loadBusStopCoordinates(String filePath) throws IOException {
+        List<String[]> rows = loadCSV(filePath);
+        if (rows.isEmpty()) return;
+
+        for (int r = 1; r < rows.size(); r++) {
+            String[] row = rows.get(r);
+            if (row.length < 4) continue;
+
+            String name = row[1].trim().toUpperCase();
+            String lonStr = row[2].trim();
+            String latStr = row[3].trim();
+
+            if (name.isEmpty() || lonStr.isEmpty() || latStr.isEmpty()) continue;
+            try {
+                double lon = Double.parseDouble(lonStr);
+                double lat = Double.parseDouble(latStr);
+                storeStationCoordinate(name, lat, lon);
+            } catch (NumberFormatException ignored) {
+                // skip malformed entries
+            }
+        }
+    }
+
+    public void loadGABusStopCoordinates(String filePath) throws IOException {
+        List<String[]> rows = loadCSV(filePath);
+        if (rows.isEmpty()) return;
+
+        String[] headers = rows.get(0);
+        int nameIdx = -1;
+        int lonIdx = -1;
+        int latIdx = -1;
+
+        for (int i = 0; i < headers.length; i++) {
+            String header = headers[i] != null ? headers[i].trim().toUpperCase(Locale.ROOT) : "";
+            if (header.equals("BUSSTOPDES")) {
+                nameIdx = i;
+            } else if (header.equals("XCOORD")) {
+                lonIdx = i;
+            } else if (header.equals("YCOORD")) {
+                latIdx = i;
+            }
+        }
+
+        if (nameIdx == -1 || lonIdx == -1 || latIdx == -1) return;
+
+        int maxIdx = Math.max(nameIdx, Math.max(lonIdx, latIdx));
+        for (int r = 1; r < rows.size(); r++) {
+            String[] row = rows.get(r);
+            if (row.length <= maxIdx) continue;
+
+            String name = row[nameIdx] != null ? row[nameIdx].trim().toUpperCase(Locale.ROOT) : "";
+            String lonStr = row[lonIdx] != null ? row[lonIdx].trim() : "";
+            String latStr = row[latIdx] != null ? row[latIdx].trim() : "";
+
+            if (name.isEmpty() || lonStr.isEmpty() || latStr.isEmpty()) continue;
+
+            try {
+                double lon = Double.parseDouble(lonStr);
+                double lat = Double.parseDouble(latStr);
+                storeStationCoordinate(name, lat, lon);
+            } catch (NumberFormatException ignored) {
+                // skip malformed entries
             }
         }
     }
@@ -78,57 +151,28 @@ public class DataLoader {
     private double[] findCoordinates(String trainStopName) {
         String normalized = trainStopName.trim().toUpperCase();
 
-        // 1. Direct match with station names
-        if (stationNameMap.containsKey(normalized)) {
-            return stationNameMap.get(normalized);
-        }
+        if (stationNameMap.containsKey(normalized)) return stationNameMap.get(normalized);
+        String cleaned = cleanName(normalized);
+        if (stationNameMap.containsKey(cleaned)) return stationNameMap.get(cleaned);
+        if (standaloneStations.contains(normalized)) return null;
 
-        // 2. Check if it's in standalone stations (names without coords)
-        if (standaloneStations.contains(normalized)) {
-            // This station exists but has no coordinates in the file
-            return null;
-        }
-
-        // 3. Try fuzzy matching with station names
         for (String stationName : stationNameMap.keySet()) {
-            if (isNameMatch(normalized, stationName)) {
-                return stationNameMap.get(stationName);
-            }
+            if (isNameMatch(normalized, stationName)) return stationNameMap.get(stationName);
         }
-
-        // 4. Try fuzzy matching with station IDs
         for (String stationId : stationIdMap.keySet()) {
-            if (isNameMatch(normalized, stationId)) {
-                return stationIdMap.get(stationId);
-            }
+            if (isNameMatch(normalized, stationId)) return stationIdMap.get(stationId);
         }
-
-        return null; // No match found
+        return null;
     }
 
-    // ============= Smart Name Matching =============
-    private boolean isNameMatch(String trainName, String coordName) {
-        // Remove common words and spaces for better matching
-        String cleanTrainName = cleanName(trainName);
-        String cleanCoordName = cleanName(coordName);
-
-        // Exact match after cleaning
-        if (cleanTrainName.equals(cleanCoordName)) {
-            return true;
-        }
-
-        // Partial match - one contains the other
-        if (cleanTrainName.contains(cleanCoordName) || cleanCoordName.contains(cleanTrainName)) {
-            return true;
-        }
-
-        // Check if they start with the same 3+ characters
-        if (cleanTrainName.length() >= 3 && cleanCoordName.length() >= 3) {
-            if (cleanTrainName.substring(0, 3).equals(cleanCoordName.substring(0, 3))) {
-                return true;
-            }
-        }
-
+    private boolean isNameMatch(String a, String b) {
+        String cleanA = cleanName(a);
+        String cleanB = cleanName(b);
+        if (cleanA.equals(cleanB)) return true;
+        int minLen = Math.min(cleanA.length(), cleanB.length());
+        int lenDiff = Math.abs(cleanA.length() - cleanB.length());
+        if (minLen >= 5 && (cleanA.contains(cleanB) || cleanB.contains(cleanA))) return true;
+        if (lenDiff <= 2 && (cleanA.startsWith(cleanB) || cleanB.startsWith(cleanA))) return true;
         return false;
     }
 
@@ -140,48 +184,85 @@ public class DataLoader {
                 .replace("STREET", "");
     }
 
+    private String normalizeDayType(String rawDayType) {
+        if (rawDayType == null || rawDayType.trim().isEmpty()) return "WEEKDAY";
+
+        String normalized = rawDayType.trim().toUpperCase(Locale.ROOT);
+        String collapsed = normalized.replaceAll("[^A-Z]", "");
+
+        switch (collapsed) {
+            case "SATURDAY":
+            case "SATURDAYS":
+                return "SATURDAY";
+            case "SUNDAY":
+            case "SUNDAYS":
+            case "SUNDAYSANDPUBLICHOLIDAYS":
+                return "SUNDAY";
+            case "PUBLICHOLIDAY":
+            case "PUBLICHOLIDAYS":
+                return "PUBLIC_HOLIDAY";
+            case "FRIDAY":
+            case "FRIDAYS":
+            case "WEEKDAY":
+            case "WEEKDAYS":
+            case "MONDAY":
+            case "MONDAYS":
+            case "TUESDAY":
+            case "TUESDAYS":
+            case "WEDNESDAY":
+            case "WEDNESDAYS":
+            case "THURSDAY":
+            case "THURSDAYS":
+            case "MONDAYTOFRIDAY":
+            case "MONDAYSTOFRIDAY":
+            case "MONDAYSTOFRIDAYS":
+            case "MONDAYTOFRIDAYS":
+            case "MONDAYSTOTHURSDAY":
+            case "MONDAYSTOTHURSDAYS":
+                return "WEEKDAY";
+            default:
+                if (collapsed.contains("HOLIDAY")) return "PUBLIC_HOLIDAY";
+                System.err.println("[WARN] Unknown day type: " + rawDayType + " -> defaulting to WEEKDAY");
+                return "WEEKDAY";
+        }
+    }
+
     // ============= Unified Stop Creation =============
     private int createStop(String stopName) {
-        String normalizedName = stopName.trim().toUpperCase();
+        String normalized = stopName.trim().toUpperCase();
+        if (stops.containsKey(normalized)) return stops.get(normalized);
 
-        if (stops.containsKey(normalizedName)) {
-            return stops.get(normalizedName);
-        }
-
-        // Find coordinates using smart lookup
-        double[] coords = findCoordinates(normalizedName);
+        double[] coords = findCoordinates(normalized);
         double lat = (coords != null) ? coords[0] : 0.0;
         double lon = (coords != null) ? coords[1] : 0.0;
 
-        // Create stop with coordinates
         int stopIdx = stopCounter++;
-        StopLocation location = new StopLocation(stopIdx, normalizedName, lat, lon);
+        StopLocation location = new StopLocation(stopIdx, normalized, lat, lon);
 
-        stops.put(normalizedName, stopIdx);
+        stops.put(normalized, stopIdx);
         stopDetails.put(stopIdx, location);
-        stopNameToDetails.put(normalizedName, location);
-
+        stopNameToDetails.put(normalized, location);
         return stopIdx;
     }
 
     // ============= Train Loader =============
     public void buildTrainData(List<String[]> rows) {
-        if (rows.isEmpty())
-            return;
+        if (rows.isEmpty()) return;
         String[] headers = rows.get(0);
 
         for (int r = 1; r < rows.size(); r++) {
             String[] row = rows.get(r);
-            if (row.length < 4)
-                continue;
+            if (row.length < 4) continue;
 
             String baseTripID = row[0];
-            String dayType = row[1].replaceAll("\\s+", "_").toUpperCase();
+            String rawDayType = row[1];
+            String normalizedDayType = normalizeDayType(rawDayType);
+
             String direction = row[2];
             String routeID = row[3];
-            String tripID = baseTripID + "_" + dayType;
+            String tripID = baseTripID + "_" + normalizedDayType;
 
-            Trip trip = new TrainTrip(tripID, baseTripID, row[1], routeID);
+            Trip trip = new TrainTrip(tripID, baseTripID, normalizedDayType, routeID);
             routes.putIfAbsent(routeID, new ArrayList<>());
             List<StopTime> stopTimes = new ArrayList<>();
 
@@ -193,127 +274,308 @@ public class DataLoader {
                     int stopID = createStop(stopName);
                     stopTimes.add(new StopTime(stopID, raw));
 
-                    if (!routes.get(routeID).contains(stopID)) {
-                        routes.get(routeID).add(stopID);
-                    }
+                    if (!routes.get(routeID).contains(stopID)) routes.get(routeID).add(stopID);
                     stopToRoutes.putIfAbsent(stopID, new ArrayList<>());
-                    if (!stopToRoutes.get(stopID).contains(routeID)) {
-                        stopToRoutes.get(stopID).add(routeID);
-                    }
+                    if (!stopToRoutes.get(stopID).contains(routeID)) stopToRoutes.get(stopID).add(routeID);
                 }
             }
 
-            if ("inbound".equalsIgnoreCase(direction)) {
-                Collections.reverse(stopTimes);
-            }
+            if ("inbound".equalsIgnoreCase(direction)) Collections.reverse(stopTimes);
             trip.times.addAll(stopTimes);
             trips.put(tripID, trip);
         }
+
+        // ✅ Debug print for trip distribution by normalized dayType
+        Map<String, Long> dayTypeCounts = trips.values().stream()
+                .collect(Collectors.groupingBy(t -> t.dayType, Collectors.counting()));
+        System.out.println("[DEBUG] Trips loaded per dayType: " + dayTypeCounts);
     }
 
     // ============= Bus Loader =============
-    public void buildBusData(List<String[]> rows) {
-        if (rows.isEmpty())
-            return;
+    public void buildBusData(List<String[]> rows, String routeFileName) {
+        if (rows.isEmpty()) return;
 
-        Map<String, BusTrip> busTrips = new HashMap<>();
+        String routeKey = routeFileName.replace(".csv", "").toUpperCase(Locale.ROOT);
+        routes.putIfAbsent(routeKey, new ArrayList<>());
+
+        String[] headers = rows.get(0);
+        boolean hasRouteNumberColumn = headers.length > 0 && headers[0] != null && headers[0].trim().equalsIgnoreCase("route_number");
+        boolean hasDayTypeOnly = headers.length > 0 && headers[0] != null && headers[0].trim().equalsIgnoreCase("day_type");
+
+        boolean includeRouteNumber = hasRouteNumberColumn || (!hasDayTypeOnly && headers.length > 1);
+        int dayTypeIndex = includeRouteNumber ? 1 : 0;
+        int dataStartIndex = includeRouteNumber ? 2 : 1;
 
         for (int r = 1; r < rows.size(); r++) {
             String[] row = rows.get(r);
-            if (row.length < 9)
-                continue;
+            if (row.length <= dayTypeIndex) continue;
 
-            String routeCode = row[1];
-            String routeName = row[2];
-            String stopId = row[3];
-            String stopDesc = row[4].trim();
-            String type = row[5];
-            int ordinal = Integer.parseInt(row[6]);
-            double xcoord = Double.parseDouble(row[7]);
-            double ycoord = Double.parseDouble(row[8]);
+            String routeNumber = includeRouteNumber ? safeValue(row, 0) : routeKey;
+            String rawDayType = safeValue(row, dayTypeIndex);
+            if (rawDayType.isEmpty()) continue;
 
-            busTrips.putIfAbsent(routeCode,
-                    new BusTrip("BUS_" + routeCode, "BUS_" + routeCode, "WEEKDAY", routeCode, routeName));
-            BusTrip trip = busTrips.get(routeCode);
+            String normalizedDayType = normalizeDayType(rawDayType);
+            String tripPrefix = includeRouteNumber ? "BUS" : "GABS";
+            String tripId = String.format(Locale.ROOT, "%s_%s_%s_%d", tripPrefix, routeKey, normalizedDayType, r);
 
-            String normalizedStopDesc = stopDesc.toUpperCase();
-            int stopIdx = createStop(normalizedStopDesc);
+            BusTrip trip = new BusTrip(tripId, routeNumber.isEmpty() ? routeKey : routeNumber, normalizedDayType, routeKey, routeFileName);
 
-            // Update coordinates if they were missing and we have them from bus data
-            StopLocation existingLoc = stopDetails.get(stopIdx);
-            if (existingLoc != null && existingLoc.getLat() == 0.0 && existingLoc.getLon() == 0.0) {
-                stopDetails.put(stopIdx, new StopLocation(stopIdx, normalizedStopDesc, ycoord, xcoord));
+            List<StopTime> stopTimes = buildStopTimesWithEstimation(headers, row, dataStartIndex, routeKey);
+            if (!stopTimes.isEmpty()) {
+                trip.times.addAll(stopTimes);
+                trips.put(tripId, trip);
             }
-
-            BusStopTime stopTime = new BusStopTime(stopId, stopDesc, type, ordinal, xcoord, ycoord, null);
-            trip.addStop(stopTime);
-
-            routes.putIfAbsent(routeCode, new ArrayList<>());
-            if (!routes.get(routeCode).contains(stopIdx)) {
-                routes.get(routeCode).add(stopIdx);
-            }
-
-            stopToRoutes.putIfAbsent(stopIdx, new ArrayList<>());
-            if (!stopToRoutes.get(stopIdx).contains(routeCode)) {
-                stopToRoutes.get(stopIdx).add(routeCode);
-            }
-        }
-
-        for (BusTrip trip : busTrips.values()) {
-            trip.times.sort(Comparator.comparingInt(st -> {
-                if (st instanceof BusStopTime) {
-                    return ((BusStopTime) st).ordinal;
-                } else {
-                    return Integer.MAX_VALUE;
-                }
-            }));
-            trips.put(trip.tripID, trip);
         }
     }
 
+    private List<StopTime> buildStopTimesWithEstimation(String[] headers, String[] row, int startColumn, String routeKey) {
+        List<StopTime> stopTimes = new ArrayList<>();
+        List<Integer> routeStops = routes.get(routeKey);
+
+        List<String> stopNames = new ArrayList<>();
+        List<String> rawValues = new ArrayList<>();
+
+        for (int c = startColumn; c < headers.length; c++) {
+            String stopNameRaw = headers[c];
+            if (stopNameRaw == null) continue;
+            String stopName = stopNameRaw.trim();
+            if (stopName.isEmpty()) continue;
+
+            stopNames.add(stopName);
+            String value = c < row.length && row[c] != null ? row[c].trim() : "";
+            rawValues.add(value);
+        }
+
+        int size = stopNames.size();
+        Integer[] minutes = new Integer[size];
+        boolean[] viaMarkers = new boolean[size];
+
+        for (int i = 0; i < size; i++) {
+            String value = rawValues.get(i);
+            if (value.isEmpty()) continue;
+            if (isTimeValue(value)) {
+                minutes[i] = timeToMinutes(value);
+            } else if (isViaValue(value)) {
+                viaMarkers[i] = true;
+            }
+        }
+
+        interpolateViaTimes(minutes, viaMarkers);
+
+        for (int i = 0; i < size; i++) {
+            if (minutes[i] == null) continue;
+
+            String stopName = stopNames.get(i).trim().toUpperCase(Locale.ROOT);
+            int stopId = createStop(stopName);
+            String timeValue = minutesToTime(minutes[i]);
+            stopTimes.add(new StopTime(stopId, timeValue));
+
+            if (!routeStops.contains(stopId)) routeStops.add(stopId);
+
+            stopToRoutes.computeIfAbsent(stopId, k -> new ArrayList<>());
+            if (!stopToRoutes.get(stopId).contains(routeKey)) stopToRoutes.get(stopId).add(routeKey);
+        }
+
+        return stopTimes;
+    }
+
+    private void interpolateViaTimes(Integer[] minutes, boolean[] viaMarkers) {
+        int n = minutes.length;
+        for (int i = 0; i < n; i++) {
+            if (!viaMarkers[i] || minutes[i] != null) continue;
+
+            int start = i;
+            while (i < n && viaMarkers[i] && minutes[i] == null) {
+                i++;
+            }
+            int prevIdx = start - 1;
+            Integer prevVal = null;
+            while (prevIdx >= 0) {
+                if (minutes[prevIdx] != null) {
+                    prevVal = minutes[prevIdx];
+                    break;
+                }
+                prevIdx--;
+            }
+
+            int nextIdx = i;
+            Integer nextVal = null;
+            while (nextIdx < n) {
+                if (minutes[nextIdx] != null) {
+                    nextVal = minutes[nextIdx];
+                    break;
+                }
+                nextIdx++;
+            }
+
+            if (prevVal == null || nextVal == null) {
+                continue;
+            }
+
+            int gap = nextIdx - prevIdx;
+            double step = (nextVal - prevVal) / (double) gap;
+            int lastValue = prevVal;
+            for (int offset = 1; offset < gap; offset++) {
+                int currentIdx = prevIdx + offset;
+                if (currentIdx >= n) break;
+                if (!viaMarkers[currentIdx] || minutes[currentIdx] != null) {
+                    if (minutes[currentIdx] != null) {
+                        lastValue = minutes[currentIdx];
+                    }
+                    continue;
+                }
+                int estimate = (int) Math.round(prevVal + step * offset);
+                if (estimate <= lastValue) {
+                    estimate = lastValue + 1;
+                }
+                minutes[currentIdx] = estimate;
+                lastValue = estimate;
+            }
+        }
+    }
+
+    private boolean isViaValue(String value) {
+        if (value == null) return false;
+        String normalized = value.trim().toUpperCase(Locale.ROOT);
+        return normalized.equals("VIA") || normalized.equals("VIA.") || normalized.equals("VIA*");
+    }
+
+    private boolean isTimeValue(String value) {
+        if (value == null) return false;
+        String trimmed = value.trim();
+        int colon = trimmed.indexOf(':');
+        if (colon <= 0 || colon == trimmed.length() - 1) return false;
+        try {
+            int hh = Integer.parseInt(trimmed.substring(0, colon));
+            int mm = Integer.parseInt(trimmed.substring(colon + 1));
+            return hh >= 0 && hh <= 29 && mm >= 0 && mm < 60;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    private int timeToMinutes(String value) {
+        String trimmed = value.trim();
+        int colon = trimmed.indexOf(':');
+        int hh = Integer.parseInt(trimmed.substring(0, colon));
+        int mm = Integer.parseInt(trimmed.substring(colon + 1));
+        return hh * 60 + mm;
+    }
+
+    private String minutesToTime(int minutes) {
+        int hh = minutes / 60;
+        int mm = minutes % 60;
+        return String.format(Locale.ROOT, "%02d:%02d", hh, mm);
+    }
+
+    private String safeValue(String[] row, int idx) {
+        if (idx < 0 || idx >= row.length) return "";
+        String value = row[idx];
+        return value == null ? "" : value.trim();
+    }
+
+    // ============= Walking Edge Builder =============
+    public void buildWalkingEdges(double maxDistanceKm) {
+        walkingEdges.clear();
+
+        List<StopLocation> locations = stopDetails.values().stream()
+                .filter(loc -> hasValidCoordinates(loc.getLat(), loc.getLon()))
+                .collect(Collectors.toList());
+
+        for (int i = 0; i < locations.size(); i++) {
+            StopLocation a = locations.get(i);
+            for (int j = i + 1; j < locations.size(); j++) {
+                StopLocation b = locations.get(j);
+
+                double distanceKm = haversineDistance(
+                        a.getLat(), a.getLon(),
+                        b.getLat(), b.getLon());
+
+                if (distanceKm == 0.0 || distanceKm > maxDistanceKm) continue;
+
+                int minutes = (int) Math.ceil((distanceKm / WALKING_SPEED_KMH) * 60.0);
+                if (minutes <= 0) minutes = 1;
+
+                addWalkingEdge(a.getID(), b.getID(), distanceKm, minutes);
+                addWalkingEdge(b.getID(), a.getID(), distanceKm, minutes);
+            }
+        }
+
+        int totalEdges = walkingEdges.values().stream().mapToInt(List::size).sum();
+        System.out.println("[DEBUG] Walking edges built: " + totalEdges);
+    }
+
+    private void addWalkingEdge(int fromStopId, int toStopId, double distanceKm, int minutes) {
+        walkingEdges.computeIfAbsent(fromStopId, k -> new ArrayList<>())
+                .add(new WalkingEdge(fromStopId, toStopId, minutes, distanceKm));
+    }
+
+    private boolean hasValidCoordinates(double lat, double lon) {
+        return !(lat == 0.0 && lon == 0.0);
+    }
+
+    private double haversineDistance(double lat1, double lon1, double lat2, double lon2) {
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+
+        double rLat1 = Math.toRadians(lat1);
+        double rLat2 = Math.toRadians(lat2);
+
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(rLat1) * Math.cos(rLat2)
+                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return EARTH_RADIUS_KM * c;
+    }
+
     // ============= Helpers =============
-     Set<String> getAvailableStops() {
+    public Set<String> getAvailableStops() {
         return new TreeSet<>(stops.keySet());
     }
 
     public Integer findStopByName(String stopName) {
         if (stopName == null) return null;
-
-        // Normalize: uppercase, trim, remove commas
         String normalized = stopName.trim().toUpperCase().replace(",", "");
-
-        // If we have "Cape Town Station, Cape Town, WC..."
-        // extract just the part before "STATION"
         if (normalized.contains("STATION")) {
             normalized = normalized.substring(0, normalized.indexOf("STATION")).trim();
         }
+        if (stops.containsKey(normalized)) return stops.get(normalized);
 
-        // 1. Direct lookup
-        if (stops.containsKey(normalized)) {
-            return stops.get(normalized);
-        }
-
-        // 2. Partial / fuzzy match fallback
         for (String stop : stops.keySet()) {
-            if (normalized.contains(stop) || stop.contains(normalized)) {
-                return stops.get(stop);
-            }
+            if (normalized.contains(stop) || stop.contains(normalized)) return stops.get(stop);
         }
-
-        // 3. Last resort: compare first 3 letters
         for (String stop : stops.keySet()) {
             if (stop.length() >= 3 && normalized.length() >= 3 &&
-                stop.substring(0, 3).equals(normalized.substring(0, 3))) {
+                    stop.substring(0, 3).equals(normalized.substring(0, 3))) {
                 return stops.get(stop);
             }
         }
-
-        return null; // No match found
+        return null;
     }
-
 
     public String getStopNameById(int stopId) {
         StopLocation stop = stopDetails.get(stopId);
         return stop != null ? stop.getName() : null;
     }
+
+
+    public Integer findNearestStop(double lat, double lng, double maxDistanceKm) {
+        Integer bestId = null;
+        double bestDistance = Double.MAX_VALUE;
+
+        for (StopLocation loc : stopDetails.values()) {
+            double stopLat = loc.getLat();
+            double stopLng = loc.getLon();
+            if (stopLat == 0.0 && stopLng == 0.0) continue;
+
+            double distanceKm = haversineDistance(lat, lng, stopLat, stopLng);
+            if (distanceKm <= maxDistanceKm && distanceKm < bestDistance) {
+                bestDistance = distanceKm;
+                bestId = loc.getID();
+            }
+        }
+
+        return bestId;
+    }
+
 }

@@ -1,6 +1,5 @@
 package backend;
 
-
 //Stop locations with id, name, latitude, longitude
 public class StopLocation {
 
@@ -8,8 +7,8 @@ public class StopLocation {
     private final String name;
     private final double lat;
     private final double lon;
-    
-    public StopLocation(int id,String name, double lat,double lon){
+
+    public StopLocation(int id, String name, double lat, double lon) {
         this.id = id;
         this.name = name;
         this.lat = lat;
@@ -17,19 +16,20 @@ public class StopLocation {
 
     }
 
-    public int getID(){
+    public int getID() {
         return id;
     }
 
-    public String getName(){
+    public String getName() {
         return name;
     }
-    public double getLat(){
+
+    public double getLat() {
         return lat;
     }
-    public double getLon(){
-        return lon; 
+
+    public double getLon() {
+        return lon;
     }
-    
 
 }

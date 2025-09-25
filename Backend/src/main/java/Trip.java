@@ -10,8 +10,7 @@ public class Trip {
     protected String dayType;
     protected String route;
     protected List<StopTime> times;
-    protected TransportMode mode;
-    
+    protected String mode;
 
     // constructor with the base requirements in each class 
     public Trip(String tripID, String baseTripID, String dayType, String route) {
@@ -20,6 +19,7 @@ public class Trip {
         this.dayType = dayType;
         this.route = route;
         this.times = new ArrayList<>();
+        this.mode = "UNKNOWN";
     }
 
     // helper classes 
@@ -35,13 +35,16 @@ public class Trip {
         return times;
     }
 
-    // Polymorphic method: each subclass identifies itself
     public String getMode() {
-        return null;
+        return mode;
+    }
+
+    protected void setMode(String mode) {
+        this.mode = mode;
     }
 
     public void addStop(StopTime stopTime) {
-    this.times.add(stopTime);
+        this.times.add(stopTime);
     }
 
 }
