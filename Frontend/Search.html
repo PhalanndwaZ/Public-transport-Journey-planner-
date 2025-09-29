@@ -8,33 +8,80 @@
 </head>
 <body>
 <div class="container center">
-<h2>Searching for routes...</h2>
-    
-<!-- Journey summary will appear here -->
-<div id="journey-summary" class="journey-summary"></div>
+  <h2>Searching for routes...</h2>
 
-<svg class="spinner" viewBox="0 0 50 50">
-<circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
-</svg>
+  <div id="journey-summary" class="journey-summary"></div>
+
+  <svg class="spinner" viewBox="0 0 50 50">
+    <circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
+  </svg>
 </div>
 
 <script>
-    // Get query parameters
-    const params = new URLSearchParams(window.location.search);
-    const from = params.get("from");
-    const to = params.get("to");
-    const date = params.get("date");
-    const time = params.get("time");
+  const params = new URLSearchParams(window.location.search);
+  const fromName = params.get("fromName") || "Start";
+  const toName = params.get("toName") || "Destination";
+  const fromLat = params.get("fromLat");
+  const fromLng = params.get("fromLng");
+  const toLat = params.get("toLat");
+  const toLng = params.get("toLng");
+  const date = params.get("date");
+  const time = params.get("time");
+  const modes = params.get("modes");
+  const maxWalkMeters = params.get("maxWalkMeters");
 
-    // Show journey details
-    document.getElementById("journey-summary").textContent =
-      `From: ${from} → To: ${to} | Date: ${date} at ${time}`;
+  const summaryParts = [`From: ${fromName} -> To: ${toName}`, `Date: ${date} at ${time}`];
+  const preferenceParts = [];
+  if (modes) {
+    preferenceParts.push(`Modes: ${modes}`);
+  }
+  if (maxWalkMeters) {
+    preferenceParts.push(`Max walk: ${maxWalkMeters} m`);
+  }
+  if (preferenceParts.length) {
+    summaryParts.push(preferenceParts.join(" | "));
+  }
+  document.getElementById("journey-summary").textContent = summaryParts.join(" | ");
 
-    // Redirect to results page after 3s - This is simulated and should be edited when the backend is integrated 
-    setTimeout(() => {
-      window.location.href = `Results.html?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&date=${date}&time=${time}`;
-    }, 3000);
+  /** Requests a journey from the backend and routes the user to the results page. */
+  async function fetchJourney() {
+    if (!fromLat || !fromLng || !toLat || !toLng) {
+      alert("Missing location coordinates. Please restart your search.");
+      return;
+    }
+
+    try {
+      const query = new URLSearchParams({
+        fromLat,
+        fromLng,
+        toLat,
+        toLng,
+        date,
+        time
+      });
+      if (modes) {
+        query.set("modes", modes);
+      }
+      if (maxWalkMeters) {
+        query.set("maxWalkMeters", maxWalkMeters);
+      }
+
+      const response = await fetch(`http://localhost:4567/journey?${query.toString()}`);
+      const data = await response.json();
+
+      localStorage.setItem("journeyData", JSON.stringify({
+        search: { fromName, toName, date, time, modes, maxWalkMeters },
+        result: data
+      }));
+
+      window.location.href = "results.html";
+    } catch (error) {
+      console.error("Error fetching journey:", error);
+      alert("Could not fetch journey data. Please check that the backend is running and try again.");
+    }
+  }
+
+  fetchJourney();
 </script>
 </body>
 </html>
-

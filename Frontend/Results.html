@@ -1,4 +1,3 @@
-<!--The Following page is just a place holder and will tranform once the backend is integrated-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,34 +5,840 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Journey Planner - Results</title>
   <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </head>
 <body>
-  <div class="container">
-    <h1>Available Routes</h1>
-    <div id="map">[Map Placeholder]</div>
+  <main class="container results">
+    <h1>Journey Results</h1>
+    <div id="status" class="alert"></div>
+    <section class="summary" id="summary"></section>
+    <section class="preferences" id="preferences"></section>
 
-    <div class="route" onclick="toggleDetails(this)">
-      <h3>Route 1: Bus 12 → Train A</h3>
-      <div class="details">
-        <p>Duration: 45 mins</p>
-        <p>Transfers: 1</p>
-      </div>
-    </div>
+    <div class="results-grid">
+      <section class="legs" id="legs"></section>
 
-    <div class="route" onclick="toggleDetails(this)">
-      <h3>Route 2: Bus 21 → Bus 34</h3>
-      <div class="details">
-        <p>Duration: 55 mins</p>
-        <p>Transfers: 2</p>
-      </div>
+      <section class="map-panel hidden" id="map-panel">
+        <div class="map-header">
+          <h2>Route Map</h2>
+          <p class="map-hint">Toggle legs to focus on a specific segment of the journey.</p>
+        </div>
+        <ul class="map-legend">
+          <li><span class="swatch swatch-bus"></span> MyCiTi / Golden Arrow</li>
+          <li><span class="swatch swatch-train"></span> Train</li>
+          <li><span class="swatch swatch-walk"></span> Walk</li>
+        </ul>
+        <div id="map"></div>
+      </section>
     </div>
-  </div>
+    <div class="actions">
+      <button id="download-summary"><i class="fas fa-download"></i> Download summary</button>
+      <button id="new-search"><i class="fas fa-search"></i> Start a new search</button>
+    </div>
+  </main>
 
   <script>
-    function toggleDetails(routeDiv) {
-      document.querySelectorAll(".route").forEach(r => r.classList.remove("active"));
-      routeDiv.classList.add("active");
+    const statusEl = document.getElementById('status');
+    const summaryEl = document.getElementById('summary');
+    const preferencesEl = document.getElementById('preferences');
+    const legsEl = document.getElementById('legs');
+    const mapPanelEl = document.getElementById('map-panel');
+    const downloadButton = document.getElementById('download-summary');
+
+    const mapState = {
+      ready: false,
+      map: null,
+      directionsService: null,
+      geocoder: null,
+      infoWindow: null,
+      overlays: [],
+      polylines: [],
+      legs: [],
+      selectedLeg: null,
+      globalBounds: null,
+      placeCache: new Map(),
+      search: null,
+      renderingToken: 0
+    };
+    let downloadData = null;
+
+    const LEG_STYLE_FALLBACK = ['#d946ef', '#f97316', '#0ea5e9'];
+
+    /** Updates the status banner with a message and contextual style. */
+    function renderStatus(message, type = 'info') {
+      statusEl.textContent = message;
+      statusEl.className = `alert ${type}`;
     }
+
+    /** Converts a minute count into a compact hours/minutes string. */
+    function formatDuration(minutes) {
+      if (!Number.isFinite(minutes) || minutes < 0) return 'Unknown';
+      const hrs = Math.floor(minutes / 60);
+      const mins = minutes % 60;
+      const parts = [];
+      if (hrs) parts.push(`${hrs}h`);
+      parts.push(`${mins}m`);
+      return parts.join(' ');
+    }
+
+
+
+    /** Normalizes operator names for consistent display. */
+    function formatOperatorLabel(operator) {
+      if (!operator) return '';
+      const raw = operator.toString().trim();
+      if (!raw) return '';
+      const upper = raw.toUpperCase();
+      if (upper === 'MYCITI') return 'MyCiTi';
+      if (upper === 'GOLDENARROW') return 'Golden Arrow';
+      return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+    }
+
+
+
+    /** Chooses the label for the leg mode, substituting operator names for buses. */
+    function displayModeLabel(mode, operator) {
+      const normalizedMode = (mode || '').toString().toUpperCase();
+      if (normalizedMode === 'BUS') {
+        const label = formatOperatorLabel(operator);
+        return label || 'Bus';
+      }
+      if (normalizedMode === 'TRAIN') return 'Train';
+      if (normalizedMode === 'WALK') return 'Walk';
+      if (!normalizedMode) return 'Unknown';
+      return normalizedMode.charAt(0) + normalizedMode.slice(1).toLowerCase();
+    }
+
+    /** Clears any cached download data and disables the export button. */
+    function resetDownload() {
+      downloadData = null;
+      if (downloadButton) {
+        downloadButton.disabled = true;
+      }
+    }
+
+    /** Stores the trip summary so the download action can generate output. */
+    function setDownloadData(search, route) {
+      if (!downloadButton) return;
+      if (!route) {
+        resetDownload();
+        return;
+      }
+      downloadData = { search: search || null, route };
+      downloadButton.disabled = false;
+    }
+
+    /** Composes the plain-text summary that users can download. */
+    function buildSummaryText(search, route) {
+      const lines = [];
+      const stamp = new Date().toLocaleString();
+      lines.push('Transit Journey Summary');
+      lines.push(`Generated: ${stamp}`);
+      lines.push('');
+
+      const fromLabel = search?.fromName || search?.from || 'Unknown';
+      const toLabel = search?.toName || search?.to || 'Unknown';
+      const dateLabel = search?.date || 'Unknown date';
+      const timeLabel = search?.time || 'Unknown time';
+
+      lines.push(`From: ${fromLabel}`);
+      lines.push(`To: ${toLabel}`);
+      lines.push(`Requested departure: ${dateLabel} at ${timeLabel}`);
+
+      const summary = route?.summary || {};
+      lines.push(`Planned departure: ${summary.start || '??:??'}`);
+      lines.push(`Planned arrival: ${summary.end || '??:??'}`);
+      const durationValue = Number(summary.durationMinutes);
+      lines.push(`Duration: ${Number.isFinite(durationValue) ? formatDuration(durationValue) : 'Unknown'}`);
+      lines.push(`Transfers: ${summary.transfers ?? 0}`);
+      if (summary.dayType) {
+        lines.push(`Service day: ${summary.dayType}`);
+      }
+
+      const legs = Array.isArray(route?.legs) ? route.legs : [];
+      if (legs.length) {
+        lines.push('');
+        lines.push('Legs:');
+        legs.forEach((leg, index) => {
+          const mode = (leg?.mode || 'Unknown').toUpperCase();
+          const line = leg?.line ? ` (${leg.line})` : '';
+          const startStop = leg?.startStop || 'Unknown start';
+          const endStop = leg?.endStop || 'Unknown end';
+          const startTime = leg?.startTime || '??:??';
+          const endTime = leg?.endTime || '??:??';
+          const details = [];
+          const duration = Number(leg?.durationMinutes);
+          if (Number.isFinite(duration) && duration > 0) {
+            details.push(`${duration.toFixed(0)} min`);
+          }
+          const distance = Number(leg?.distanceKm);
+          if (Number.isFinite(distance) && distance > 0) {
+            details.push(`${distance.toFixed(2)} km`);
+          }
+          lines.push(`${index + 1}. ${mode}${line}: ${startStop} (${startTime}) -> ${endStop} (${endTime})${details.length ? ' [' + details.join(', ') + ']' : ''}`);
+        });
+      }
+
+      lines.push('');
+      lines.push('Generated by Cape Town Journey Planner');
+      return lines.join('\n');
+    }
+
+    /** Renders the traveller preference chips or a default message. */
+    function renderPreferences(search) {
+      const items = [];
+      if (search?.modes) items.push(`<span><strong>Modes:</strong> ${search.modes}</span>`);
+      if (search?.maxWalkMeters) items.push(`<span><strong>Max walk:</strong> ${search.maxWalkMeters} m</span>`);
+      preferencesEl.innerHTML = items.length
+        ? `<h2>Preferences</h2><p>${items.join(' | ')}</p>`
+        : `<h2>Preferences</h2><p>No special preferences supplied.</p>`;
+    }
+
+    /** Injects the top-level journey overview details. */
+    function renderSummary(search, summary) {
+      if (!summary) {
+        summaryEl.innerHTML = '<p>No summary available.</p>';
+        return;
+      }
+      const rows = [
+        `<strong>From:</strong> ${search?.fromName ?? search?.from ?? 'Unknown'}`,
+        `<strong>To:</strong> ${search?.toName ?? search?.to ?? 'Unknown'}`,
+        `<strong>Date:</strong> ${search?.date ?? 'Unknown'} at ${search?.time ?? 'Unknown'}`,
+        `<strong>Departure:</strong> ${summary.start ?? '??:??'}`,
+        `<strong>Arrival:</strong> ${summary.end ?? '??:??'}`,
+        `<strong>Duration:</strong> ${formatDuration(summary.durationMinutes)}`,
+        `<strong>Transfers:</strong> ${summary.transfers ?? 0}`
+      ];
+      if (summary.dayType) rows.push(`<strong>Service day:</strong> ${summary.dayType}`);
+      summaryEl.innerHTML = `<h2>Overview</h2><p>${rows.join('<br>')}</p>`;
+    }
+
+    /** Builds the accordion markup for a single journey leg. */
+    function buildLegMarkup(leg, index) {
+      const mode = (leg.mode || 'UNKNOWN').toUpperCase();
+      const isWalk = mode === 'WALK';
+      const classes = ['leg'];
+      if (isWalk) {
+        classes.push('leg-walk');
+      } else if (mode === 'BUS') {
+        classes.push('leg-bus');
+      } else if (mode === 'TRAIN') {
+        classes.push('leg-train');
+      } else {
+        classes.push('leg-transit');
+      }
+      const modeLabel = displayModeLabel(mode, leg.operator);
+      const line = leg.line ? ` <span class="leg-line">${leg.line}</span>` : '';
+      const distanceLine = isWalk && Number(leg.distanceKm) > 0
+        ? `<strong>Distance:</strong> ${Number(leg.distanceKm).toFixed(2)} km`
+        : '';
+      const operatorLabel = mode === 'BUS' ? formatOperatorLabel(leg.operator) : '';
+      const stops = Array.isArray(leg.stops) ? leg.stops : [];
+      const stopItems = stops.map((stop) => {
+        return `
+          <li>
+            <span class="stop-time">${stop.time ?? ''}</span>
+            <span class="stop-name">${stop.stop ?? 'Unknown stop'}</span>
+          </li>
+        `;
+      }).join('');
+
+      const detailLines = [
+        `<strong>Start:</strong> ${leg.startStop ?? 'Unknown'} (${leg.startTime ?? '??:??'})`,
+        `<strong>End:</strong> ${leg.endStop ?? 'Unknown'} (${leg.endTime ?? '??:??'})`
+      ];
+      if (operatorLabel) {
+        detailLines.push(`<strong>Operator:</strong> ${operatorLabel}`);
+      }
+      if (distanceLine) {
+        detailLines.push(distanceLine);
+      }
+      const detailHtml = detailLines.join('<br>');
+
+      const isExpanded = index === 0;
+
+      return `
+        <article class="${classes.join(' ')} ${isExpanded ? 'expanded' : ''}" data-leg-index="${index}">
+          <header class="leg-header" role="button" tabindex="0" aria-expanded="${isExpanded}">
+            <span class="leg-toggle"><span class="chevron"></span></span>
+            <span class="leg-index">Leg ${index + 1}</span>
+            <span class="leg-mode">${modeLabel}${line}</span>
+            <span class="leg-duration">${formatDuration(leg.durationMinutes)}</span>
+          </header>
+          <div class="leg-body">
+            <p>
+              ${detailHtml}
+            </p>
+            ${stopItems ? `<ol class="leg-stops">${stopItems}</ol>` : ''}
+          </div>
+        </article>
+      `;
+    }
+
+    /** Renders all legs, resets caches, and kicks off map rendering. */
+    function renderLegs(legs) {
+      mapState.legs = Array.isArray(legs) ? legs : [];
+      mapState.placeCache.clear();
+      if (!mapState.legs.length) {
+        legsEl.innerHTML = '<h2>Route Details</h2><p>No legs found for this journey.</p>';
+        hideMap();
+        return;
+      }
+
+      const html = mapState.legs.map(buildLegMarkup).join('');
+      legsEl.innerHTML = `<h2>Route Details</h2><div class="legs-grid">${html}</div>`;
+      mapState.selectedLeg = 0;
+      bindLegInteractions();
+      maybeRenderMap().catch((err) => console.error('Map render failed', err));
+    }
+
+    /** Attaches click and keyboard handlers to leg cards. */
+    function bindLegInteractions() {
+      const cards = legsEl.querySelectorAll('.leg');
+      cards.forEach((card) => {
+        const index = Number(card.dataset.legIndex);
+        const header = card.querySelector('.leg-header');
+        header.addEventListener('click', () => toggleLeg(index));
+        header.addEventListener('keydown', (evt) => {
+          if (evt.key === 'Enter' || evt.key === ' ') {
+            evt.preventDefault();
+            toggleLeg(index);
+          }
+        });
+      });
+    }
+
+    /** Expands or collapses a leg card and updates map highlighting. */
+    function toggleLeg(index) {
+      const card = legsEl.querySelector(`.leg[data-leg-index="${index}"]`);
+      if (!card) return;
+      const header = card.querySelector('.leg-header');
+      const isExpanded = card.classList.toggle('expanded');
+      header.setAttribute('aria-expanded', String(isExpanded));
+
+      if (isExpanded) {
+        mapState.selectedLeg = index;
+        highlightLeg(index);
+        return;
+      }
+
+      const expandedCards = Array.from(legsEl.querySelectorAll('.leg.expanded'));
+      if (expandedCards.length) {
+        const fallbackIndex = Number(expandedCards[expandedCards.length - 1].dataset.legIndex);
+        mapState.selectedLeg = Number.isFinite(fallbackIndex) ? fallbackIndex : null;
+        highlightLeg(mapState.selectedLeg);
+      } else {
+        mapState.selectedLeg = null;
+        highlightLeg(null);
+      }
+    }
+
+    /** Hides the map panel and clears map state when no legs exist. */
+    function hideMap() {
+      mapState.renderingToken++;
+      if (mapPanelEl) mapPanelEl.classList.add('hidden');
+      if (mapState.infoWindow) mapState.infoWindow.close();
+      clearMapOverlays();
+      mapState.selectedLeg = null;
+    }
+
+    /** Removes polylines, markers, and bounds from the current map. */
+    function clearMapOverlays() {
+      mapState.overlays.forEach((overlay) => overlay.setMap && overlay.setMap(null));
+      mapState.overlays = [];
+      mapState.polylines.forEach(({ polyline }) => polyline.setMap && polyline.setMap(null));
+      mapState.polylines = [];
+      mapState.globalBounds = null;
+    }
+
+    /** Aggregates coordinate sequences for a leg to draw on the map. */
+    function collectLegPoints(leg) {
+      const points = [];
+      if (!leg || !Array.isArray(leg.stops)) return points;
+      leg.stops.forEach((stop) => {
+        const coords = stop?.coords;
+        if (!coords) return;
+        const lat = Number(coords.lat);
+        const lon = Number(coords.lon ?? coords.lng);
+        if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
+        const last = points[points.length - 1];
+        if (last && Math.abs(last.lat - lat) < 1e-6 && Math.abs(last.lng - lon) < 1e-6) return;
+        points.push({ lat, lng: lon });
+      });
+      return points;
+    }
+
+    /** Ensures the map is shown and renders overlays when legs are present. */
+    async function maybeRenderMap() {
+      if (!mapPanelEl || !mapState.ready || !mapState.legs.length) return;
+      const token = ++mapState.renderingToken;
+
+      try {
+        ensureMapServices();
+        mapPanelEl.classList.remove('hidden');
+        clearMapOverlays();
+
+        const overallBounds = new google.maps.LatLngBounds();
+        const layers = [];
+
+        for (let index = 0; index < mapState.legs.length; index += 1) {
+          if (token !== mapState.renderingToken) return;
+          const layer = await renderLegLayer(mapState.legs[index], index, overallBounds);
+          if (layer) layers.push(layer);
+        }
+
+        if (token !== mapState.renderingToken) {
+          layers.forEach((layer) => layer.polyline.setMap(null));
+          return;
+        }
+
+        mapState.polylines = layers;
+        await renderStopMarkers(overallBounds, token);
+        if (token !== mapState.renderingToken) return;
+
+        if (!overallBounds.isEmpty()) {
+          mapState.map.fitBounds(overallBounds, 48);
+          mapState.globalBounds = overallBounds;
+        }
+
+        const targetIndex = typeof mapState.selectedLeg === 'number' ? mapState.selectedLeg : 0;
+        highlightLeg(targetIndex);
+      } catch (error) {
+        console.error('Map rendering failed', error);
+        hideMap();
+      }
+    }
+
+    /** Initialises Google Maps services the first time the map renders. */
+    function ensureMapServices() {
+      if (!mapState.map) {
+        mapState.map = new google.maps.Map(document.getElementById('map'), {
+          center: { lat: -33.9249, lng: 18.4241 },
+          zoom: 13,
+          mapTypeControl: false,
+          streetViewControl: false,
+          fullscreenControl: true
+        });
+      }
+      if (!mapState.directionsService) {
+        mapState.directionsService = new google.maps.DirectionsService();
+      }
+      if (!mapState.geocoder) {
+        mapState.geocoder = new google.maps.Geocoder();
+      }
+      if (!mapState.infoWindow) {
+        mapState.infoWindow = new google.maps.InfoWindow();
+      }
+    }
+
+    /** Draws polylines and stop markers for a given leg. */
+    async function renderLegLayer(leg, index, overallBounds) {
+      const geometry = await buildLegGeometry(leg, index);
+      if (!geometry || geometry.path.length < 2) return null;
+
+      const polyline = new google.maps.Polyline({
+        path: geometry.path,
+        geodesic: false,
+        ...buildPolylineOptions(geometry.style, false)
+      });
+      polyline.setMap(mapState.map);
+
+      const legBounds = new google.maps.LatLngBounds();
+      geometry.path.forEach((point) => legBounds.extend(point));
+      if (!legBounds.isEmpty()) {
+        overallBounds.union(legBounds);
+      }
+
+      return { polyline, bounds: legBounds, index, style: geometry.style };
+    }
+
+    /** Translates leg data into geometry segments and marker metadata. */
+    async function buildLegGeometry(leg, index) {
+      if (!leg) return null;
+      const points = collectLegPoints(leg);
+      if (points.length < 2) return null;
+
+      const mode = (leg.mode || 'UNKNOWN').toUpperCase();
+      let path = null;
+
+      if (mapState.directionsService) {
+        const attempts = [{ travelMode: null }];
+
+        if (mode === 'BUS' && window.google && google.maps && google.maps.TravelMode && google.maps.TravelMode.DRIVING) {
+          attempts.push({ travelMode: google.maps.TravelMode.DRIVING });
+        }
+
+        for (const attempt of attempts) {
+          const request = createDirectionsRequest(points, mode, leg, attempt.travelMode);
+          if (!request) continue;
+
+          try {
+            const result = await requestDirections(request);
+            if (result) {
+              path = extractPath(result);
+            }
+          } catch (err) {
+            const label = attempt.travelMode || 'TRANSIT';
+            console.warn(`Directions request failed (${label}).`, err);
+          }
+
+          if (path && path.length >= 2) {
+            break;
+          }
+        }
+      }
+
+      if (!path || path.length < 2) {
+        path = points;
+      }
+
+      return {
+        path,
+        style: getLegStyle(mode, index)
+      };
+    }
+
+    /** Builds a Google Directions API request for the leg geometry. */
+    function createDirectionsRequest(points, mode, leg, overrideTravelMode = null) {
+      if (!window.google || !google.maps || !points.length) return null;
+      const origin = points[0];
+      const destination = points[points.length - 1];
+      const travelMode = overrideTravelMode || getTravelMode(mode);
+      if (!travelMode) return null;
+
+      const request = {
+        origin,
+        destination,
+        travelMode,
+        provideRouteAlternatives: false
+      };
+
+      if (travelMode === google.maps.TravelMode.TRANSIT) {
+        const transitModes = getTransitModes(mode);
+        const transitOptions = {};
+        if (transitModes.length) {
+          transitOptions.modes = transitModes;
+        }
+        const departure = buildDepartureDate(mapState.search, leg);
+        if (departure) {
+          transitOptions.departureTime = departure;
+        }
+        if (Object.keys(transitOptions).length) {
+          request.transitOptions = transitOptions;
+        }
+      }
+
+      return request;
+    }
+
+    /** Maps internal leg modes to Google travel modes. */
+    function getTravelMode(mode) {
+      if (!window.google || !google.maps) return null;
+      if (mode === 'WALK') return google.maps.TravelMode.WALKING;
+      if (mode === 'BUS' || mode === 'TRAIN') return google.maps.TravelMode.TRANSIT;
+      return google.maps.TravelMode.TRANSIT;
+    }
+
+    /** Returns the Google transit submodes that match the leg. */
+    function getTransitModes(mode) {
+      if (!window.google || !google.maps || !google.maps.TransitMode) return [];
+      if (mode === 'BUS') return [google.maps.TransitMode.BUS];
+      if (mode === 'TRAIN') return [google.maps.TransitMode.RAIL];
+      return [];
+    }
+
+    /** Combines the search date/time into a Date for routing requests. */
+    function buildDepartureDate(search, leg) {
+      const dateStr = search?.date;
+      const timeStr = leg?.startTime || search?.time;
+      if (!dateStr || !timeStr) return null;
+      const normalizedTime = timeStr.length === 5 ? `${timeStr}:00` : timeStr;
+      const candidate = new Date(`${dateStr}T${normalizedTime}`);
+      return Number.isNaN(candidate.getTime()) ? null : candidate;
+    }
+
+    /** Calls the Directions API and returns the best available route. */
+    function requestDirections(request) {
+      return new Promise((resolve, reject) => {
+        mapState.directionsService.route(request, (result, status) => {
+          if (status === 'OK' && result) {
+            resolve(result);
+            return;
+          }
+          if (status === 'ZERO_RESULTS') {
+            resolve(null);
+            return;
+          }
+          reject(new Error(`Directions status: ${status}`));
+        });
+      });
+    }
+
+    /** Converts a Directions result into an array of lat/lng points. */
+    function extractPath(result) {
+      if (!result?.routes?.length) return null;
+      const path = [];
+      const [route] = result.routes;
+      route.legs.forEach((segment) => {
+        segment.steps.forEach((step) => {
+          const stepPath = step.path || [];
+          stepPath.forEach((latLng) => path.push({ lat: latLng.lat(), lng: latLng.lng() }));
+        });
+      });
+      if (!path.length && route.overview_path) {
+        route.overview_path.forEach((latLng) => path.push({ lat: latLng.lat(), lng: latLng.lng() }));
+      }
+      return path;
+    }
+
+    /** Returns stroke styling options based on the leg mode. */
+    function getLegStyle(mode, index) {
+      const styles = {
+        WALK: { color: '#6b7280', opacity: 0.9, weight: 4, dashed: true },
+        BUS: { color: '#2563eb', opacity: 0.95, weight: 5, dashed: false },
+        TRAIN: { color: '#059669', opacity: 0.95, weight: 5, dashed: false }
+      };
+      if (styles[mode]) return { ...styles[mode] };
+      const color = LEG_STYLE_FALLBACK[index % LEG_STYLE_FALLBACK.length];
+      return { color, opacity: 0.85, weight: 5, dashed: false };
+    }
+
+    /** Creates the polyline configuration used when drawing a leg. */
+    function buildPolylineOptions(style, highlight) {
+      const weight = highlight ? style.weight + 2 : style.weight;
+      const opacity = highlight ? 0.95 : style.opacity;
+      const options = {
+        strokeColor: style.color,
+        strokeOpacity: style.dashed ? 0 : opacity,
+        strokeWeight: weight,
+        zIndex: highlight ? 20 : 8
+      };
+      if (style.dashed && window.google && google.maps && google.maps.SymbolPath) {
+        options.icons = [{
+          icon: {
+            path: google.maps.SymbolPath.CIRCLE,
+            strokeColor: style.color,
+            strokeOpacity: highlight ? 0.95 : 0.7,
+            strokeWeight: weight,
+            fillOpacity: 0,
+            scale: 2
+          },
+          offset: '0',
+          repeat: '12px'
+        }];
+      } else {
+        options.icons = null;
+      }
+      return options;
+    }
+
+    /** Adds labelled markers for key stops such as start/end or transfers. */
+    async function renderStopMarkers(bounds, token) {
+      const keyStops = collectKeyStops(mapState.legs);
+      if (!keyStops.length) return;
+
+      let transferIndex = 1;
+      for (const stop of keyStops) {
+        if (token !== mapState.renderingToken) return;
+        const name = await getPlaceName(stop.position, stop.fallbackName);
+        const label = stop.type === 'start' ? 'A' : stop.type === 'end' ? 'B' : `T${transferIndex++}`;
+        const color = stop.type === 'start' ? '#2563eb' : stop.type === 'end' ? '#ef4444' : '#f59e0b';
+        const marker = new google.maps.Marker({
+          position: stop.position,
+          map: mapState.map,
+          icon: makeMarkerIcon(color),
+          label: { text: label, color: '#ffffff', fontWeight: '600' },
+          title: name
+        });
+
+        const times = stop.times.size ? `<br><span>${Array.from(stop.times).sort().join(' ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ ')}</span>` : '';
+        const infoHtml = `<div class="marker-info"><strong>${name}</strong>${times}</div>`;
+        marker.addListener('click', () => {
+          mapState.infoWindow.setContent(infoHtml);
+          mapState.infoWindow.open({ anchor: marker, map: mapState.map });
+        });
+        mapState.overlays.push(marker);
+        bounds.extend(stop.position);
+      }
+    }
+
+    /** Collects notable stops across all legs for marker placement. */
+    function collectKeyStops(legs) {
+      const priority = { start: 3, transfer: 2, end: 4 };
+      const map = new Map();
+
+      legs.forEach((leg, index) => {
+        const stops = Array.isArray(leg?.stops) ? leg.stops : [];
+        if (!stops.length) return;
+        const first = stops[0];
+        const last = stops[stops.length - 1];
+        const startType = index === 0 ? 'start' : 'transfer';
+        const endType = index === legs.length - 1 ? 'end' : 'transfer';
+        push(first, startType, leg.startTime);
+        push(last, endType, leg.endTime);
+      });
+
+      /** Adds or merges a stop entry within the key-stop accumulator. */
+      function push(stop, type, time) {
+        if (!stop?.coords) return;
+        const lat = Number(stop.coords.lat);
+        const lng = Number(stop.coords.lon ?? stop.coords.lng);
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+        const key = `${lat.toFixed(6)}|${lng.toFixed(6)}`;
+        const existing = map.get(key);
+        if (existing) {
+          if (priority[type] > priority[existing.type]) existing.type = type;
+          if (time) existing.times.add(time);
+          if (stop.stop) existing.fallbackName = stop.stop;
+        } else {
+          const times = new Set();
+          if (time) times.add(time);
+          map.set(key, {
+            position: { lat, lng },
+            type,
+            fallbackName: stop.stop || '',
+            times
+          });
+        }
+      }
+
+      return Array.from(map.values());
+    }
+
+    /** Constructs a coloured circular marker icon. */
+    function makeMarkerIcon(color) {
+      if (!window.google || !google.maps || !google.maps.SymbolPath) return null;
+      return {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: 9,
+        fillColor: color,
+        fillOpacity: 1,
+        strokeColor: '#ffffff',
+        strokeWeight: 2
+      };
+    }
+
+    /** Reverse-geocodes a coordinate and caches the resulting place name. */
+    async function getPlaceName(position, fallback) {
+      const key = `${position.lat.toFixed(6)}|${position.lng.toFixed(6)}`;
+      if (mapState.placeCache.has(key)) return mapState.placeCache.get(key);
+      if (!mapState.geocoder) {
+        mapState.placeCache.set(key, fallback);
+        return fallback;
+      }
+      return new Promise((resolve) => {
+        mapState.geocoder.geocode({ location: position }, (results, status) => {
+          let name = fallback;
+          if (status === 'OK' && Array.isArray(results) && results.length) {
+            name = results[0].formatted_address || fallback;
+          }
+          mapState.placeCache.set(key, name);
+          resolve(name);
+        });
+      });
+    }
+
+    /** Applies highlight styling to the selected leg and scrolls it into view. */
+    function highlightLeg(index) {
+      if (!mapState.map) return;
+      let activeBounds = null;
+      mapState.polylines.forEach((layer) => {
+        const isActive = index === layer.index;
+        layer.polyline.setOptions(buildPolylineOptions(layer.style, isActive));
+        if (isActive && layer.bounds && !layer.bounds.isEmpty()) {
+          activeBounds = layer.bounds;
+        }
+      });
+
+      if (activeBounds) {
+        mapState.map.fitBounds(activeBounds, 72);
+      } else if (mapState.globalBounds) {
+        mapState.map.fitBounds(mapState.globalBounds, 48);
+      }
+    }
+
+    /** Google Maps callback that primes map state after the script loads. */
+    function initRouteMap() {
+      mapState.ready = true;
+      maybeRenderMap().catch((err) => console.error('Map initialisation failed', err));
+    }
+
+    /** Bootstraps the results page by loading journey data from storage. */
+    function main() {
+      resetDownload();
+      const raw = localStorage.getItem('journeyData');
+      if (!raw) {
+        renderStatus('No journey data found. Please start a new search.', 'error');
+        hideMap();
+        return;
+      }
+
+      let payload;
+      try {
+        payload = JSON.parse(raw);
+      } catch (err) {
+        console.error('Failed to parse stored journey data', err);
+        renderStatus('Stored journey data is corrupted. Please start a new search.', 'error');
+        hideMap();
+        return;
+      }
+
+      const { search, result } = payload;
+      mapState.search = search || null;
+      renderPreferences(search);
+
+      if (!result) {
+        renderStatus('No results returned from the backend.', 'error');
+        hideMap();
+        return;
+      }
+
+      if (result.error) {
+        renderStatus(result.error, 'error');
+        hideMap();
+        return;
+      }
+
+      const routes = Array.isArray(result.routes) ? result.routes : [];
+      if (!routes.length) {
+        const message = result.message || 'No viable route found for the requested trip.';
+        renderStatus(message, 'warning');
+        renderSummary(search, null);
+        renderLegs([]);
+        return;
+      }
+
+      const firstRoute = routes[0];
+      renderStatus('Journey found successfully.', 'success');
+      renderSummary(search, firstRoute.summary);
+      setDownloadData(search, firstRoute);
+      renderLegs(firstRoute.legs);
+    }
+
+    if (downloadButton) {
+      downloadButton.disabled = true;
+      downloadButton.addEventListener('click', () => {
+        if (!downloadData || !downloadData.route) return;
+        const text = buildSummaryText(downloadData.search, downloadData.route);
+        const blob = new Blob([text], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const filename = `journey-summary-${new Date().toISOString().replace(/[:]/g, '-')}.txt`;
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = filename;
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+      });
+    }
+
+    document.getElementById('new-search').addEventListener('click', () => {
+      window.location.href = 'HomePage.html';
+    });
+
+    main();
   </script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDnLAIO_seP2Xbvet0EhibJFjWbg7wR2Io&callback=initRouteMap" async defer></script>
 </body>
 </html>
