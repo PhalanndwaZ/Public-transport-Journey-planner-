@@ -16,7 +16,13 @@ public class BusTrip extends Trip {
         this.dayType = dayType;
         this.routeCode = routeCode;
         this.routeName = routeName;
+        setMode("BUS");
     }
+    @Override
+    public String getMode() {
+        return "BUS";
+    }
+
     @Override
     public String toString() {
         return "BusTrip{" +

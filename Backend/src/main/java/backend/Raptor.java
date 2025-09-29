@@ -4,6 +4,8 @@ import java.util.*;
 
 public class Raptor {
 
+    /** Parses an HH:MM string into minutes after midnight. */
+
     public static int timeToMinutes(String time) {
         String[] parts = time.split(":");
         int hh = Integer.parseInt(parts[0]);
@@ -11,11 +13,15 @@ public class Raptor {
         return hh * 60 + mm;
     }
 
+    /** Formats minutes after midnight back into HH:MM. */
+
     public static String minutesToTime(int minutes) {
         int hh = minutes / 60;
         int mm = minutes % 60;
         return String.format("%02d:%02d", hh, mm);
     }
+
+    /** Executes the RAPTOR algorithm for the given source, target, and schedule set. */
 
     public static Result runRaptor(
             int sourceStop,
@@ -171,6 +177,8 @@ public class Raptor {
         return new Result(earliestArrival, bestWalkDistance, bestConsecutiveWalk, predecessor);
     }
 
+    /** Checks whether a newly discovered arrival time improves on an existing state. */
+
     private static boolean isBetterState(int newArrival, double newTotalWalk, double newConsecutiveWalk,
                                          int currentArrival, double currentTotalWalk, double currentConsecutiveWalk) {
         final double EPS = 1e-6;
@@ -183,6 +191,8 @@ public class Raptor {
         if (Double.isInfinite(currentConsecutiveWalk)) return true;
         return newConsecutiveWalk + EPS < currentConsecutiveWalk;
     }
+
+    /** Backtracks through predecessor states to produce ordered path steps. */
 
     public static List<PathStep> reconstructPath(
             Map<Integer, Predecessor> predecessor,
@@ -272,23 +282,8 @@ public class Raptor {
             path.addAll(0, segment);
             current = step.from;
         }
-
-        if (path.isEmpty() || path.get(0).stopID != source) {
-            StopLocation sourceLoc = loader.stopDetails.get(source);
-            if (sourceLoc != null) {
-                String departureTime = path.isEmpty() ? minutesToTime(loader.stopDetails.get(source).getID()) : path.get(0).getTime();
-                path.add(0, new PathStep(
-                        "SOURCE",
-                        source,
-                        sourceLoc.getName(),
-                        departureTime,
-                        sourceLoc.getLat(),
-                        sourceLoc.getLon(),
-                        false,
-                        0.0,
-                        "SOURCE"
-                ));
-            }
+        if (current != source) {
+            return Collections.emptyList();
         }
 
         return path;

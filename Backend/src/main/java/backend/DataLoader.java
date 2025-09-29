@@ -14,6 +14,12 @@ public class DataLoader {
     public Map<Integer, StopLocation> stopDetails = new HashMap<>();
     public Map<String, StopLocation> stopNameToDetails = new HashMap<>();
     public Map<Integer, List<WalkingEdge>> walkingEdges = new HashMap<>();
+    private final Set<String> invalidRoutes = new HashSet<>();
+    /**
+     * Records the operating agency for each bus route (e.g., MyCiTi or Golden Arrow).
+     * Keys are normalized route identifiers to stay consistent across loaders.
+     */
+    private final Map<String, String> routeOperators = new HashMap<>();
 
     private static final double EARTH_RADIUS_KM = 6371.0;
     private static final double WALKING_SPEED_KMH = 5.0;
@@ -35,6 +41,8 @@ public class DataLoader {
     private int stopCounter = 0;
 
     // ============= Generic CSV Loader =============
+    /** Reads a CSV file from disk while preserving empty columns for downstream loaders. */
+
     public List<String[]> loadCSV(String filePath) throws IOException {
         List<String[]> rows = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
@@ -48,6 +56,8 @@ public class DataLoader {
     }
 
     // ============= Station Coordinates Loader =============
+    /** Parses the station coordinate CSV and seeds lookup maps for trains and standalone stations. */
+
     public void loadStationCoordinates(String filePath) throws IOException {
         stationNameMap.clear();
         stationIdMap.clear();
@@ -81,6 +91,8 @@ public class DataLoader {
         }
     }
 
+    /** Loads MyCiTi stop coordinates and stores them for later stop matching. */
+
     public void loadBusStopCoordinates(String filePath) throws IOException {
         List<String[]> rows = loadCSV(filePath);
         if (rows.isEmpty()) return;
@@ -103,6 +115,8 @@ public class DataLoader {
             }
         }
     }
+
+    /** Extracts Golden Arrow stop coordinates using header-driven indices. */
 
     public void loadGABusStopCoordinates(String filePath) throws IOException {
         List<String[]> rows = loadCSV(filePath);
@@ -148,6 +162,8 @@ public class DataLoader {
     }
 
     // ============= Smart Coordinate Lookup =============
+    /** Attempts to resolve a stop name to a cached latitude/longitude pair. */
+
     private double[] findCoordinates(String trainStopName) {
         String normalized = trainStopName.trim().toUpperCase();
 
@@ -165,6 +181,8 @@ public class DataLoader {
         return null;
     }
 
+    /** Performs loose string matching to catch near-identical stop names and identifiers. */
+
     private boolean isNameMatch(String a, String b) {
         String cleanA = cleanName(a);
         String cleanB = cleanName(b);
@@ -176,6 +194,8 @@ public class DataLoader {
         return false;
     }
 
+    /** Strips whitespace and common suffixes so name comparisons are more forgiving. */
+
     private String cleanName(String name) {
         return name.replaceAll("\\s+", "")
                 .replace("RD", "")
@@ -183,6 +203,42 @@ public class DataLoader {
                 .replace("ST", "")
                 .replace("STREET", "");
     }
+
+    private String normalizeRouteId(String routeId) {
+        if (routeId == null) return null;
+        String normalized = routeId.trim();
+        return normalized.isEmpty() ? null : normalized;
+    }
+
+    private void flagRouteIfInvalidCoordinates(String routeId, int stopId) {
+        String normalized = normalizeRouteId(routeId);
+        if (normalized == null) return;
+        StopLocation location = stopDetails.get(stopId);
+        if (location == null) return;
+        if (!hasValidCoordinates(location.getLat(), location.getLon())) {
+            invalidRoutes.add(normalized);
+        }
+    }
+
+    /**
+     * Normalizes an operator label so lookups stay case-insensitive and trimmed.
+     */
+    private String normalizeOperatorLabel(String operator) {
+        if (operator == null) return null;
+        String normalized = operator.trim().toUpperCase(Locale.ROOT);
+        return normalized.isEmpty() ? null : normalized;
+    }
+
+    /**
+     * Returns the stored operator label (if any) for the given route identifier.
+     */
+    public String getRouteOperator(String routeId) {
+        String normalized = normalizeRouteId(routeId);
+        if (normalized == null) return null;
+        return routeOperators.get(normalized);
+    }
+
+    /** Coerces raw day-type labels into the canonical values used across the system. */
 
     private String normalizeDayType(String rawDayType) {
         if (rawDayType == null || rawDayType.trim().isEmpty()) return "WEEKDAY";
@@ -228,6 +284,8 @@ public class DataLoader {
     }
 
     // ============= Unified Stop Creation =============
+    /** Allocates a new stop ID, records its coordinates, and caches lookups if unseen. */
+
     private int createStop(String stopName) {
         String normalized = stopName.trim().toUpperCase();
         if (stops.containsKey(normalized)) return stops.get(normalized);
@@ -246,6 +304,8 @@ public class DataLoader {
     }
 
     // ============= Train Loader =============
+    /** Transforms train CSV rows into Trip instances and stop-time sequences. */
+
     public void buildTrainData(List<String[]> rows) {
         if (rows.isEmpty()) return;
         String[] headers = rows.get(0);
@@ -254,12 +314,13 @@ public class DataLoader {
             String[] row = rows.get(r);
             if (row.length < 4) continue;
 
-            String baseTripID = row[0];
-            String rawDayType = row[1];
+            String baseTripID = safeValue(row, 0);
+            String rawDayType = safeValue(row, 1);
             String normalizedDayType = normalizeDayType(rawDayType);
 
-            String direction = row[2];
-            String routeID = row[3];
+            String direction = safeValue(row, 2);
+            String routeID = normalizeRouteId(safeValue(row, 3));
+            if (routeID == null) continue;
             String tripID = baseTripID + "_" + normalizedDayType;
 
             Trip trip = new TrainTrip(tripID, baseTripID, normalizedDayType, routeID);
@@ -272,6 +333,7 @@ public class DataLoader {
                 if (!raw.isEmpty()) {
                     String stopName = col.trim().toUpperCase();
                     int stopID = createStop(stopName);
+                    flagRouteIfInvalidCoordinates(routeID, stopID);
                     stopTimes.add(new StopTime(stopID, raw));
 
                     if (!routes.get(routeID).contains(stopID)) routes.get(routeID).add(stopID);
@@ -285,18 +347,31 @@ public class DataLoader {
             trips.put(tripID, trip);
         }
 
-        // ✅ Debug print for trip distribution by normalized dayType
+        // ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¦ Debug print for trip distribution by normalized dayType
         Map<String, Long> dayTypeCounts = trips.values().stream()
                 .collect(Collectors.groupingBy(t -> t.dayType, Collectors.counting()));
         System.out.println("[DEBUG] Trips loaded per dayType: " + dayTypeCounts);
     }
 
     // ============= Bus Loader =============
-    public void buildBusData(List<String[]> rows, String routeFileName) {
+/**
+     * Ingests a bus schedule CSV into the unified transit dataset.
+     * @param rows parsed CSV rows where columns contain stop names and times.
+     * @param routeFileName source filename used to derive the route identifier.
+     * @param operatorLabel label for the agency operating this file (e.g., MyCiTi or Golden Arrow).
+     */
+    public void buildBusData(List<String[]> rows, String routeFileName, String operatorLabel) {
         if (rows.isEmpty()) return;
 
-        String routeKey = routeFileName.replace(".csv", "").toUpperCase(Locale.ROOT);
+        String routeKey = normalizeRouteId(routeFileName.replace(".csv", "").toUpperCase(Locale.ROOT));
+        if (routeKey == null) {
+            return;
+        }
         routes.putIfAbsent(routeKey, new ArrayList<>());
+        String normalizedOperator = normalizeOperatorLabel(operatorLabel);
+        if (normalizedOperator != null) {
+            routeOperators.put(routeKey, normalizedOperator);
+        }
 
         String[] headers = rows.get(0);
         boolean hasRouteNumberColumn = headers.length > 0 && headers[0] != null && headers[0].trim().equalsIgnoreCase("route_number");
@@ -327,6 +402,8 @@ public class DataLoader {
             }
         }
     }
+
+    /** Builds stop times for a bus route, interpolating VIA gaps where necessary. */
 
     private List<StopTime> buildStopTimesWithEstimation(String[] headers, String[] row, int startColumn, String routeKey) {
         List<StopTime> stopTimes = new ArrayList<>();
@@ -367,6 +444,7 @@ public class DataLoader {
 
             String stopName = stopNames.get(i).trim().toUpperCase(Locale.ROOT);
             int stopId = createStop(stopName);
+            flagRouteIfInvalidCoordinates(routeKey, stopId);
             String timeValue = minutesToTime(minutes[i]);
             stopTimes.add(new StopTime(stopId, timeValue));
 
@@ -378,6 +456,8 @@ public class DataLoader {
 
         return stopTimes;
     }
+
+    /** Fills in VIA-labelled timetable gaps by interpolating between known times. */
 
     private void interpolateViaTimes(Integer[] minutes, boolean[] viaMarkers) {
         int n = minutes.length;
@@ -434,11 +514,15 @@ public class DataLoader {
         }
     }
 
+    /** Detects whether a raw timetable cell represents a VIA marker. */
+
     private boolean isViaValue(String value) {
         if (value == null) return false;
         String normalized = value.trim().toUpperCase(Locale.ROOT);
         return normalized.equals("VIA") || normalized.equals("VIA.") || normalized.equals("VIA*");
     }
+
+    /** Determines whether a string looks like an HH:MM time entry. */
 
     private boolean isTimeValue(String value) {
         if (value == null) return false;
@@ -454,6 +538,8 @@ public class DataLoader {
         }
     }
 
+    /** Converts an HH:MM string into minutes-since-midnight. */
+
     private int timeToMinutes(String value) {
         String trimmed = value.trim();
         int colon = trimmed.indexOf(':');
@@ -462,11 +548,15 @@ public class DataLoader {
         return hh * 60 + mm;
     }
 
+    /** Formats minutes-since-midnight back into HH:MM. */
+
     private String minutesToTime(int minutes) {
         int hh = minutes / 60;
         int mm = minutes % 60;
         return String.format(Locale.ROOT, "%02d:%02d", hh, mm);
     }
+
+    /** Safely pulls a trimmed column value or returns an empty string when missing. */
 
     private String safeValue(String[] row, int idx) {
         if (idx < 0 || idx >= row.length) return "";
@@ -475,6 +565,45 @@ public class DataLoader {
     }
 
     // ============= Walking Edge Builder =============
+    public void purgeInvalidRoutes() {
+        if (invalidRoutes.isEmpty()) {
+            return;
+        }
+
+        Set<String> toDrop = new LinkedHashSet<>(invalidRoutes);
+        int routesBefore = routes.size();
+        int tripsBefore = trips.size();
+
+        for (String routeId : toDrop) {
+            routes.remove(routeId);
+            routeOperators.remove(routeId);
+        }
+
+        stopToRoutes.replaceAll((stopId, routeList) -> {
+            routeList.removeIf(toDrop::contains);
+            return routeList;
+        });
+
+        trips.entrySet().removeIf(entry -> toDrop.contains(entry.getValue().getRoute()));
+
+        int routesAfter = routes.size();
+        int tripsAfter = trips.size();
+        System.out.println("[WARN] Dropped routes with missing coordinates: " + toDrop);
+        System.out.println("[WARN] Routes count: " + routesBefore + " -> " + routesAfter
+                + ", trips count: " + tripsBefore + " -> " + tripsAfter);
+    }
+
+    public boolean isRouteInvalid(String routeId) {
+        String normalized = normalizeRouteId(routeId);
+        return normalized != null && invalidRoutes.contains(normalized);
+    }
+
+    public Set<String> getInvalidRoutes() {
+        return Collections.unmodifiableSet(invalidRoutes);
+    }
+
+    /** Generates walking edges between stops that are within the configured distance. */
+
     public void buildWalkingEdges(double maxDistanceKm) {
         walkingEdges.clear();
 
@@ -505,6 +634,8 @@ public class DataLoader {
         System.out.println("[DEBUG] Walking edges built: " + totalEdges);
     }
 
+    /** Registers a directional walking edge with distance metadata. */
+
     private void addWalkingEdge(int fromStopId, int toStopId, double distanceKm, int minutes) {
         walkingEdges.computeIfAbsent(fromStopId, k -> new ArrayList<>())
                 .add(new WalkingEdge(fromStopId, toStopId, minutes, distanceKm));
@@ -513,6 +644,8 @@ public class DataLoader {
     private boolean hasValidCoordinates(double lat, double lon) {
         return !(lat == 0.0 && lon == 0.0);
     }
+
+    /** Computes the great-circle distance between two latitude/longitude points. */
 
     private double haversineDistance(double lat1, double lon1, double lat2, double lon2) {
         double dLat = Math.toRadians(lat2 - lat1);
@@ -557,7 +690,6 @@ public class DataLoader {
         StopLocation stop = stopDetails.get(stopId);
         return stop != null ? stop.getName() : null;
     }
-
 
     public Integer findNearestStop(double lat, double lng, double maxDistanceKm) {
         Integer bestId = null;
